@@ -75,9 +75,9 @@ class ElectionCog(commands.Cog):
     @commands.command()
     async def voteDM(self, ctx):
         message = await ctx.send("Click on the reactions representing the users you wish to vote for. Once you're"
-                           " done, react with a ✅ to confirm. **Remember, you can only vote for two candidates, and"
-                           " you can't change your mind once you confirm!**"
-                           "\n*This prompt will expire in 5 minutes.*")
+                            " done, react with a ✅ to confirm. **Remember, you can only vote for two candidates, and"
+                            " you can't change your mind once you confirm!**"
+                            "\n*This prompt will expire in 5 minutes.*")
         for emoji in [candidate.emoji for candidate in self.getAllCandidates()]:
             await message.add_reaction(emoji)
         await message.add_reaction("✅")
