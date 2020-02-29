@@ -25,7 +25,7 @@ class ElectionCog(commands.Cog):
                 candidate.username = user.name + "#" + user.discriminator
                 candidate.avatar = user.avatar_url
                 emojiimage = await candidate.avatar.read()
-                emojiname = re.sub(r'\W+', '', candidate.username.replace(" ","_"))
+                emojiname = re.sub(r'\W+', '', candidate.username.replace(" ", "_"))
                 candidate.emoji = await self.backendGuild.create_custom_emoji(name=emojiname,image=emojiimage)
             else:
                 candidate.username = info.get("username")
