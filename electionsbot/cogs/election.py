@@ -79,6 +79,7 @@ class ElectionCog(commands.Cog):
             await m.add_reaction(c)
         await m.add_reaction("✅")
 
+
 class Candidate:
     def __init__(self, id, username=None, campaign=None, avatar=None):
         self.id = id
@@ -93,6 +94,7 @@ class Candidate:
         output.description = self.campaign
         output.set_footer(text="To vote for this candidate, do XYZ.")
         return output
+
 
 def setup(bot: commands.Bot):
     bot.add_cog(ElectionCog(bot))
