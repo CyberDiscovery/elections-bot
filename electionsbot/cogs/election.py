@@ -22,7 +22,7 @@ class ElectionCog(commands.Cog):
             candidate = Candidate(id)
             user = self.bot.get_user(int(id))
             if user:
-                candidate.username = user.name+"#"+user.discriminator
+                candidate.username = user.name + "#" + user.discriminator
                 candidate.avatar = user.avatar_url
                 emojiimage = await candidate.avatar.read()
                 emojiname = re.sub(r'\W+', '', candidate.username.replace(" ","_"))
@@ -61,7 +61,7 @@ class ElectionCog(commands.Cog):
     async def candidateList(self, ctx):
         names = [x.username for x in self.getAllCandidates()]
         print(names)
-        await ctx.send("In a random order, the candidates currently standing are: \n"+"\n".join(names))
+        await ctx.send("In a random order, the candidates currently standing are: \n" + "\n".join(names))
 
     @commands.command()
     async def vote(self, ctx):
