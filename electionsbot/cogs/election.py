@@ -43,7 +43,7 @@ class ElectionCog(commands.Cog):
     def getAllCandidates(self):
         candidates = list(self.candidates.values())
         print(candidates)
-        random.shuffle(candidates) # Randomise the order each time for neutrality.
+        random.shuffle(candidates)  # Randomise the order each time for neutrality.
         return candidates
 
 
