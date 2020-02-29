@@ -54,8 +54,9 @@ class ElectionCog(commands.Cog):
         info = self.candidates.get(int(candidate.id))
         print(info)
         if not info:
-            await ctx.send("We couldn't find any information on that candidate! They may not be running, or we might have "
-                           f"identified the wrong user (We think you're asking about `{candidate.name + '#' + candidate.discriminator}`).")
+            await ctx.send("We couldn't find any information on that candidate! They may not be running, or we might"
+                           " have identified the wrong user (We think you're asking about"
+                           f" `{candidate.name + '#' + candidate.discriminator}`).")
         else:
             await ctx.send(embed=info.getEmbed())
 
@@ -73,9 +74,9 @@ class ElectionCog(commands.Cog):
 
     @commands.command()
     async def voteDM(self, ctx):
-        message = await ctx.send("Click on the reactions representing the users you wish to vote for. Once you're done, react"
-                           " with a ✅ to confirm. **Remember, you can only vote for two candidates, and you can't change"
-                           " your mind once you confirm!**"
+        message = await ctx.send("Click on the reactions representing the users you wish to vote for. Once you're"
+                           " done, react with a ✅ to confirm. **Remember, you can only vote for two candidates, and"
+                           " you can't change your mind once you confirm!**"
                            "\n*This prompt will expire in 5 minutes.*")
         for emoji in [candidate.emoji for candidate in self.getAllCandidates()]:
             await message.add_reaction(emoji)
