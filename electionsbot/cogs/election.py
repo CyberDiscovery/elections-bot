@@ -47,7 +47,6 @@ class ElectionCog(commands.Cog):
         random.shuffle(candidates)  # Randomise the order each time for neutrality.
         return candidates
 
-
     @commands.command()
     async def candidateInfo(self, ctx, candidate: User):
         info = self.candidates.get(int(candidate.id))
@@ -80,9 +79,6 @@ class ElectionCog(commands.Cog):
             await m.add_reaction(c)
         await m.add_reaction("✅")
 
-
-
-
 class Candidate:
     def __init__(self, id, username=None, campaign=None, avatar=None):
         self.id = id
@@ -97,8 +93,6 @@ class Candidate:
         output.description = self.campaign
         output.set_footer(text="To vote for this candidate, do XYZ.")
         return output
-
-
 
 def setup(bot: commands.Bot):
     bot.add_cog(ElectionCog(bot))
