@@ -8,7 +8,7 @@ from ..constants import EMOJI_SERVER_ID
 class ElectionCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.candidateData = load(open("testdata.json","r"))
+        self.candidateData = load(open("testdata.json", "r"))
         self.candidates = {}
 
     @commands.Cog.listener()
@@ -18,7 +18,7 @@ class ElectionCog(commands.Cog):
         for emoji in await self.backendGuild.fetch_emojis():
             if emoji.user == self.bot.user:
                 await emoji.delete()
-        for id,info in self.candidateData.items():
+        for id, info in self.candidateData.items():
             candidate = Candidate(id)
             user = self.bot.get_user(int(id))
             if user:
@@ -26,7 +26,7 @@ class ElectionCog(commands.Cog):
                 candidate.avatar = user.avatar_url
                 emojiimage = await candidate.avatar.read()
                 emojiname = re.sub(r'\W+', '', candidate.username.replace(" ", "_"))
-                candidate.emoji = await self.backendGuild.create_custom_emoji(name=emojiname,image=emojiimage)
+                candidate.emoji = await self.backendGuild.create_custom_emoji(name=emojiname, image=emojiimage)
             else:
                 candidate.username = info.get("username")
                 candidate.avatar = info.get("avatar")
@@ -48,7 +48,7 @@ class ElectionCog(commands.Cog):
 
 
     @commands.command()
-    async def candidateInfo(self,ctx, candidate: User):
+    async def candidateInfo(self, ctx, candidate: User):
         info = self.candidates.get(int(candidate.id))
         print(info)
         if not info:
