@@ -5,6 +5,7 @@ from json import load
 import random, urllib.request, re
 from ..constants import EMOJI_SERVER_ID
 
+
 class ElectionCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
