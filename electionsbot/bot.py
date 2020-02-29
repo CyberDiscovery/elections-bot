@@ -26,4 +26,5 @@ bot.log = logger
 
 # Load cogs
 bot.load_extension("electionsbot.cogs.general")
+bot.load_extension("electionsbot.cogs.election")
 
