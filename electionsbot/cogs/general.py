@@ -30,7 +30,7 @@ class General(Cog):
         link = f'{next(repo.remote().urls)}/commit/{latest}'
         date = latest.authored_datetime.strftime('**%x** at **%X**')
         self.bot.log.info(
-            "CyberDiscovery bot is now logged in.\n"
+            "Elections bot is now logged in.\n"
             f"Latest commit: **[{message}]({link})**"
             f"\nAuthor: **{latest.author}** on {date}"
         )
