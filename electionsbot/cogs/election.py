@@ -3,6 +3,7 @@ from discord import Embed, Member, User
 from discord.ext import commands
 from json import load
 import random, urllib.request, re
+from ..constants import EMOJI_SERVER_ID
 
 class ElectionCog(commands.Cog):
     def __init__(self, bot):
@@ -13,7 +14,7 @@ class ElectionCog(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         # Load up all the relevant candidates!
-        self.backendGuild = self.bot.get_guild(655447327665815552)
+        self.backendGuild = self.bot.get_guild(EMOJI_SERVER_ID)
         for emoji in await self.backendGuild.fetch_emojis():
             if emoji.user == self.bot.user:
                 await emoji.delete()
