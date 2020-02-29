@@ -2,7 +2,9 @@ import discord
 from discord import Embed, Member, User
 from discord.ext import commands
 from json import load
-import random, urllib.request, re
+import random
+import urllib.request
+import re
 from ..constants import EMOJI_SERVER_ID
 
 
