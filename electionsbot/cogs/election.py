@@ -48,7 +48,7 @@ class ElectionCog(commands.Cog):
 
 
     @commands.command()
-    async def candidateInfo(self,ctx, candidate : User):
+    async def candidateInfo(self,ctx, candidate: User):
         info = self.candidates.get(int(candidate.id))
         print(info)
         if not info:
