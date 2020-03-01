@@ -70,8 +70,10 @@ class ElectionCog(commands.Cog):
                 try:
                     emojiimage = urllib.request.urlopen(url=candidate.avatar)
                 except urllib.error.HTTPError:
-                    emojiimage = urllib.request.urlopen(url="https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/twitter/236/black-question-mark-ornament_2753.png")
-                emojiname = re.sub(r'\W+', '', candidate.username.replace(" ", "_"))
+                    emojiimage = urllib.request.urlopen(
+                        url="https://cdn.beano.dev/question-mark.png"
+                    )
+                emojiname = re.sub(r"\W+", "", candidate.username.replace(" ", "_"))
                 for x in emoji:
                     if x.name == emojiname:
                         candidate.emoji = x
@@ -122,13 +124,21 @@ class ElectionCog(commands.Cog):
     @commands.command()
     async def vote(self, ctx):
         if not self.ready:
-            return await ctx.send(
-                "I'm just getting ready, hold on!")
-        if not isinstance(ctx.channel,discord.DMChannel):
-            return await ctx.send(
-                "You can only use this command in DMs.")
-        print(await (await connectPostgres()).fetch("SELECT voter_id FROM votes WHERE voter_id=$1", ctx.author.id))
-        if len(await (await connectPostgres()).fetch("SELECT voter_id FROM votes WHERE voter_id=$1", ctx.author.id)) > 0:
+            return await ctx.send("I'm just getting ready, hold on!")
+        if not isinstance(ctx.channel, discord.DMChannel):
+            return await ctx.send("You can only use this command in DMs.")
+        print(
+            await (await connectPostgres()).fetch(
+                "SELECT voter_id FROM votes WHERE voter_id=$1", ctx.author.id
+            )
+        )
+        if (
+            len(
+                await (await connectPostgres()).fetch(
+                    "SELECT voter_id FROM votes WHERE voter_id=$1", ctx.author.id
+                )
+            ) > 0
+        ):
             return await ctx.send("You have already voted!")
         currentSession = self.voteSessions.get(ctx.author.id)
         if currentSession and not currentSession.hasTimedOut():
@@ -242,8 +252,12 @@ class ElectionCog(commands.Cog):
         info = self.candidates.get(int(candidate.id))
         voteSession = self.voteSessions.get(ctx.author.id)
         if not voteSession:
-            return await ctx.send(dedent("""You must have an active votesession to make a choice. Use the vote \
-                                  command to start a votesession."""))
+            return await ctx.send(
+                dedent(
+                    """You must have an active votesession to make a choice. Use the vote \
+                                  command to start a votesession."""
+                )
+            )
         if voteSession.state != "PICK":
             return await ctx.send(
                 "You cannot modify your choices if you are confirming them."
@@ -260,12 +274,16 @@ class ElectionCog(commands.Cog):
             await ctx.send(f"Added {info.username} as a choice.")
 
     @commands.command()
-    async def unchoose(self, ctx, candidate : discord.User):
+    async def unchoose(self, ctx, candidate: discord.User):
         info = self.candidates.get(int(candidate.id))
         voteSession = self.voteSessions.get(ctx.author.id)
         if not voteSession:
-            return await ctx.send(dedent("""You must have an active votesession to make a choice. Use the vote \
-                                  command to start a votesession."""))
+            return await ctx.send(
+                dedent(
+                    """You must have an active votesession to make a choice. Use the vote \
+                                  command to start a votesession."""
+                )
+            )
         if voteSession.state != "PICK":
             return await ctx.send(
                 "You cannot modify your choices if you are confirming them."
@@ -284,7 +302,9 @@ class ElectionCog(commands.Cog):
     async def clearvote(self, ctx, voter: User):
         self.connectPostgres().execute("DELETE FROM votes WHERE voter_id=$1", User.id)
         await ctx.send(f"<@{User.id}>'s votes have been cleared")
-        return await voter.send(f"Your votes were cleared by <@{ctx.author.id}> - you can now place a new set.")
+        return await voter.send(
+            f"Your votes were cleared by <@{ctx.author.id}> - you can now place a new set."
+        )
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
