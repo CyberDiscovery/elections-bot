@@ -118,10 +118,10 @@ class ElectionCog(commands.Cog):
             str(candidate.emoji) + " " + candidate.username
             for candidate in self.getAllCandidates()
         ]
-        await ctx.send(
+        await ctx.send(dedent(
             f"""In a random order, the candidates currently standing are:
             {chr(10).join(names)}"""
-        )
+        ))
 
     @commands.command()
     async def vote(self, ctx):
@@ -288,10 +288,10 @@ class ElectionCog(commands.Cog):
                 "You cannot modify your choices if you are confirming them."
             )
         if not info:
-            await ctx.send(
+            await ctx.send(dedent(
                 f"""We couldn't find that candidate! (We think you're asking about" \
                 `{candidate.name + '#' + candidate.discriminator}`)."""
-            )
+            ))
         else:
             voteSession.removeChoice(info)
             await ctx.send(f"Removed {info.username} as a choice.")
