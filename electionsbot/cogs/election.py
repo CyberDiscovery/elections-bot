@@ -167,7 +167,7 @@ class ElectionCog(commands.Cog):
         if not self.ready:
             return await ctx.send("I'm just getting ready, hold on!")
         if not isinstance(ctx.channel, discord.DMChannel):
-            return await ctx.send("You can only use this command in DMs.")
+            return await ctx.send("You can only use this command in DMs.", delete_after=20)
         if self.START_TIME > datetime.utcnow() or self.END_TIME < datetime.utcnow():
             return await ctx.send("Voting is currently closed.")
         if self.CREATION_CUTOFF < ctx.author.created_at:
@@ -218,7 +218,7 @@ class ElectionCog(commands.Cog):
                     vote for. If you want to cancel a choice, use `unchoose <candidate>`. Once you're \
                     done, run the `confirm` command to confirm. If you need more time to decide, just ignore this \
                     message.
-                    
+
                     **Remember, you can only vote for exactly two candidates, and
                     you can't change your mind once you confirm!**
 
@@ -238,7 +238,7 @@ class ElectionCog(commands.Cog):
         if not self.ready:
             return await channel.send("I'm just getting ready, hold on!")
         if not isinstance(channel, discord.DMChannel):
-            return await channel.send("You can only use this command in DMs.")
+            return await channel.send("You can only use this command in DMs.", delete_after=20)
         voteSession = self.voteSessions.get(author.id)
         if not voteSession:
             return await author.send("You don't have a vote session active to confirm.")
@@ -299,7 +299,7 @@ class ElectionCog(commands.Cog):
     async def choose(self, ctx, candidate: discord.User):
         if not isinstance(ctx.channel, discord.DMChannel):
             await ctx.message.delete()
-            return await ctx.send("You can only use this command in DMs.")
+            return await ctx.send("You can only use this command in DMs.", delete_after=20)
         info = self.candidates.get(int(candidate.id))
         voteSession = self.voteSessions.get(ctx.author.id)
         if not voteSession:
@@ -332,7 +332,7 @@ class ElectionCog(commands.Cog):
     async def unchoose(self, ctx, candidate: discord.User):
         if not isinstance(ctx.channel, discord.DMChannel):
             await ctx.message.delete()
-            return await ctx.send("You can only use this command in DMs.")
+            return await ctx.send("You can only use this command in DMs.", delete_after=20)
         info = self.candidates.get(int(candidate.id))
         voteSession = self.voteSessions.get(ctx.author.id)
         if not voteSession:
