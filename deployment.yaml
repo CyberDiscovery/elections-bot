@@ -28,20 +28,20 @@ spec:
   hostPath:
     path: "/mnt/data"
 ---
-kind: PersistentVolumeClaim
-apiVersion: v1
-metadata:
-  name: elections-claim
-  labels:
-    app: postgres
-spec:
-  storageClassName: default
-  accessModes:
-    - ReadWriteMany
-  resources:
-    requests:
-      storage: 5Gi
----
+#kind: PersistentVolumeClaim
+#apiVersion: v1
+#metadata:
+#  name: elections-claim
+#  labels:
+#    app: postgres
+#spec:
+#  storageClassName: default
+#  accessModes:
+#    - ReadWriteMany
+#  resources:
+#    requests:
+#      storage: 5Gi
+#---
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
