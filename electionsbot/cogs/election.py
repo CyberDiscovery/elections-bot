@@ -10,8 +10,8 @@ import asyncpg
 import discord
 from discord import Embed, User
 from discord.ext import commands
-from electionsbot.constants import EMOJI_SERVER_ID, PostgreSQL, ROOT_ROLE_ID, DTB_ROLE_ID, \
-    LEVEL_ROLE_ID, VOTE_SERVER_ID, MUTED_ROLE_ID
+from electionsbot.constants import DTB_ROLE_ID, EMOJI_SERVER_ID, LEVEL_ROLE_ID, MUTED_ROLE_ID, PostgreSQL,\
+    ROOT_ROLE_ID, VOTE_SERVER_ID
 
 
 async def connectPostgres():
