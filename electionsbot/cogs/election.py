@@ -30,7 +30,7 @@ async def connectPostgres():
 class ElectionCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        data = load(open("testdata.json", "r"))
+        data = load(open("applications.json", "r",encoding="UTF-8"))
         self.candidateData = data["candidates"]
         self.candidates = {}
         self.voteSessions = {}
@@ -70,7 +70,10 @@ class ElectionCog(commands.Cog):
                 candidate.username = info.get("username")
                 candidate.avatar = info.get("avatar")
                 try:
-                    emojiimage = urllib.request.urlopen(url=candidate.avatar)
+                    if candidate.avatar:
+                        emojiimage = urllib.request.urlopen(url=candidate.avatar)
+                    else:
+                        emojiimage = urllib.request.urlopen(url="https://cdn.beano.dev/question-mark.png")
                 except urllib.error.HTTPError:
                     emojiimage = urllib.request.urlopen(
                         url="https://cdn.beano.dev/question-mark.png"
@@ -82,7 +85,7 @@ class ElectionCog(commands.Cog):
                         break
                 else:
                     candidate.emoji = await self.backendGuild.create_custom_emoji(
-                        name=emojiname, image=emojiimage
+                        name=emojiname, image=emojiimage.read()
                     )
             candidate.campaign = info.get("campaign")
             self.candidates[int(id)] = candidate
@@ -92,7 +95,7 @@ class ElectionCog(commands.Cog):
         self.ready = True
 
     def getCandidate(self, candidateID):
-        return self.candidates.get(candidateID)
+        return self.candidates.get(int(candidateID))
 
     def getCandidateFromName(self, candidateName):
         for c in self.candidates.values():
@@ -407,7 +410,6 @@ class ElectionCog(commands.Cog):
                 name=emojiname, image=emojiimage
             )
 
-
 class Candidate:
     def __init__(self, id, username=None, campaign=None, avatar=None):
         self.id = id
@@ -420,7 +422,10 @@ class Candidate:
     def getEmbed(self):
         output = Embed()
         output.colour = 0x00daff
-        output.set_author(name=self.username, icon_url=self.avatar)
+        if self.avatar:
+            output.set_author(name=self.username, icon_url=self.avatar)
+        else:
+            output.set_author(name=self.username)
         output.description = self.campaign
         output.set_footer(text=f"")
         return output
