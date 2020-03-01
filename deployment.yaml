@@ -58,7 +58,7 @@ spec:
     spec:
       containers:
       - name: "elections-db"
-        image: "postgres:latest"
+        image: "postgres:11"
         volumeMounts:
             - mountPath: /var/lib/postgresql/data
               name: elections-db

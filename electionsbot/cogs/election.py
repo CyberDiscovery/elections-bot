@@ -32,7 +32,7 @@ async def connectPostgres():
 class ElectionCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        data = load(open("testdata.json", "r", encoding="UTF-8"))
+        data = load(open("electionsbot/testdata.json", "r", encoding="UTF-8"))
         self.candidateData = data["candidates"]
         self.candidates = {}
         self.voteSessions = {}
@@ -231,7 +231,7 @@ class ElectionCog(commands.Cog):
                 "Run the `:choose <candidate>` command, specifying the Discord Name of the user you wish to "
                 "vote for; and repeat this for each choice you wish to make.\n"
                 "If you want to cancel a choice, use `unchoose <candidate>`. Once you're "
-                'done, run the `confirm` command to confirm. If you need more time to decide, just ignore this "'
+                "done, run the `confirm` command to confirm. If you need more time to decide, just ignore this "
                 "message.\n\n"
                 "**Remember, you can only vote for exactly two candidates, and"
                 "you can't change your mind once you confirm!**\n\n"
