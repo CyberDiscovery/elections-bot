@@ -2,7 +2,6 @@
 
 import logging
 
-from discord import Game
 from discord.ext.commands import Bot, when_mentioned_or
 from electionsbot.log import DiscordHandler
 
