@@ -410,6 +410,7 @@ class ElectionCog(commands.Cog):
                 name=emojiname, image=emojiimage
             )
 
+
 class Candidate:
     def __init__(self, id, username=None, campaign=None, avatar=None):
         self.id = id
