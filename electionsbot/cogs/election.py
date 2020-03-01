@@ -10,7 +10,8 @@ import asyncpg
 import discord
 from discord import Embed, User
 from discord.ext import commands
-from electionsbot.constants import EMOJI_SERVER_ID, PostgreSQL, ROOT_ROLE_ID
+from electionsbot.constants import EMOJI_SERVER_ID, PostgreSQL, ROOT_ROLE_ID, DTB_ROLE_ID, \
+    LEVEL_ROLE_ID, VOTE_SERVER_ID, MUTED_ROLE_ID
 
 
 async def connectPostgres():
@@ -184,6 +185,14 @@ class ElectionCog(commands.Cog):
         if self.CREATION_CUTOFF < ctx.author.created_at:
             return await ctx.send(
                 "This account was created after the cutoff, and is therefore not eligible to vote."
+            )
+        member = self.bot.get_guild(VOTE_SERVER_ID).get_member(ctx.author.id)
+        if member and self.bot.get_role(LEVEL_ROLE_ID) > member.top_role and not \
+                (self.bot.get_role(DTB_ROLE_ID) in member.roles or \
+                self.bot.get_role(MUTED_ROLE_ID) == member.top_role):
+            return await ctx.send(
+                "In order to be eligible to vote, you must have reached at least Mee6 Level 5, and not have any outstanding"
+                " mutes."
             )
         if (
             len(
