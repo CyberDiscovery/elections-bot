@@ -76,14 +76,18 @@ class ElectionCog(commands.Cog):
         random.shuffle(candidates)  # Randomise the order each time for neutrality.
         return candidates
 
-    def connectPostgres(self):
-        return asyncpg.connect(
+    async def connectPostgres(self):
+        connection = await asyncpg.connect(
             host=PostgreSQL.PGHOST,
             port=PostgreSQL.PGPORT,
             user=PostgreSQL.PGUSER,
             password=PostgreSQL.PGPASSWORD,
             database=PostgreSQL.PGDATABASE,
         )
+        await connection.execute(
+            "CREATE TABLE IF NOT EXISTS votes (voter_id bigint PRIMARY KEY, vote_1 bigint, vote_2 bigint)"
+        )
+        return connection
 
     @commands.command()
     async def candidateInfo(self, ctx, candidate: User):
@@ -238,7 +242,8 @@ class VoteSession:
         # TODO: Database Logic
         # Here, the votes chosen within this session should be committed to the database.
         # Useful: self.user gives the voting user; self.choices should give an array of Candidates chosen.
-        pass
+        connection = self.connectPostgres()
+
 
 def setup(bot: commands.Bot):
     bot.add_cog(ElectionCog(bot))
