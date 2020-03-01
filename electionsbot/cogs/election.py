@@ -3,13 +3,18 @@ from discord import Embed, Member, User
 from discord.ext import commands
 from json import load
 from asyncio import sleep
-import random, urllib.request, re, time
 from ..constants import EMOJI_SERVER_ID
+import random
+import urllib.request
+import re
+import time
+from electionsbot.constants import EMOJI_SERVER_ID
+
 
 class ElectionCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.candidateData = load(open("testdata.json","r"))
+        self.candidateData = load(open("testdata.json", "r"))
         self.candidates = {}
         self.voteSessions = {}
         # CONFIG SETTINGS
@@ -25,11 +30,11 @@ class ElectionCog(commands.Cog):
         # Load up all the relevant candidates!
         self.backendGuild = self.bot.get_guild(EMOJI_SERVER_ID)
         emoji = await self.backendGuild.fetch_emojis()
-        for id,info in self.candidateData.items():
+        for id, info in self.candidateData.items():
             candidate = Candidate(id)
             user = self.bot.get_user(int(id))
             if user:
-                candidate.username = user.name+"#"+user.discriminator
+                candidate.username = user.name + "#" + user.discriminator
                 candidate.avatar = user.avatar_url
                 emojiimage = await candidate.avatar.read()
                 emojiname = re.sub(r'\W+', '', candidate.username.replace(" ","_"))
@@ -69,25 +74,25 @@ class ElectionCog(commands.Cog):
     def getAllCandidates(self):
         candidates = list(self.candidates.values())
         print(candidates)
-        random.shuffle(candidates) # Randomise the order each time for neutrality.
+        random.shuffle(candidates)  # Randomise the order each time for neutrality.
         return candidates
 
-
     @commands.command()
-    async def candidateInfo(self,ctx, candidate : User):
+    async def candidateInfo(self, ctx, candidate: User):
         info = self.candidates.get(int(candidate.id))
         print(info)
         if not info:
-            await ctx.send("We couldn't find any information on that candidate! They may not be running, or we might have "
-                           f"identified the wrong user (We think you're asking about `{candidate.name + '#' + candidate.discriminator}`).")
+            await ctx.send("We couldn't find any information on that candidate! They may not be running, or we might"
+                           " have identified the wrong user (We think you're asking about"
+                           f" `{candidate.name + '#' + candidate.discriminator}`).")
         else:
             await ctx.send(embed=info.getEmbed())
 
     @commands.command()
     async def candidateList(self, ctx):
-        names = [x.username for x in self.getAllCandidates()]
+        names = [candidate.username for candidate in self.getAllCandidates()]
         print(names)
-        await ctx.send("In a random order, the candidates currently standing are: \n"+"\n".join(names))
+        await ctx.send("In a random order, the candidates currently standing are: \n" + "\n".join(names))
 
     @commands.command()
     async def vote(self, ctx):
@@ -99,16 +104,16 @@ class ElectionCog(commands.Cog):
                 "You can only use this command in DMs.")
         if self.voteSessions.get(ctx.author.id):
             return await ctx.send("You already have an active voting session! Please use that, or wait for it to expire.")
-        m = await ctx.send("Click on the reactions representing the users you wish to vote for. Once you're done, react"
-                           " with a ✅ to confirm. If you need more time to decide, just ignore this message. \n"
-                           "**Remember, you can only vote for two candidates, and you can't change"
-                           " your mind once you confirm!**"
+        message = await ctx.send("Click on the reactions representing the users you wish to vote for. Once you're"
+                            " done, react with a ✅ to confirm. If you need more time to decide, just ignore this message. \n"
+                           "**Remember, you can only vote for two candidates, and"
+                            " you can't change your mind once you confirm!**"
                            "\n*This prompt will expire in 5 minutes.*")
         self.voteSessions[ctx.author.id] = VoteSession(user=ctx.author,timeout=300)
-        self.voteSessions[ctx.author.id].setMessage(m)
-        for c in [x.emoji for x in self.getAllCandidates()]:
-            await m.add_reaction(c)
-        await m.add_reaction("✅")
+        self.voteSessions[ctx.author.id].setMessage(message)
+        for emoji in [candidate.emoji for candidate in self.getAllCandidates()]:
+            await message.add_reaction(emoji)
+        await message.add_reaction("✅")
 
     @commands.Cog.listener()
     async def on_reaction_add(self,reaction, user):
@@ -162,7 +167,6 @@ class ElectionCog(commands.Cog):
         elif voteSession.hasTimedOut():
             del self.voteSessions[user.id]
             m = await user.send("The voting session you had has now expired; you need to start a new one.")
-
 
 
 class Candidate:
@@ -225,7 +229,6 @@ class VoteSession:
         # Here, the votes chosen within this session should be committed to the database.
         # Useful: self.user gives the voting user; self.choices should give an array of Candidates chosen.
         pass
-
 
 def setup(bot: commands.Bot):
     bot.add_cog(ElectionCog(bot))
