@@ -4,7 +4,6 @@ import urllib.request
 from asyncio import sleep
 from datetime import datetime
 from json import load
-from textwrap import dedent
 
 import asyncpg
 import discord
@@ -119,18 +118,16 @@ class ElectionCog(commands.Cog):
             str(candidate.emoji) + " " + candidate.username
             for candidate in self.getAllCandidates()
         ]
-        await ctx.send(dedent(
-            f"""
-            In a random order, the candidates currently standing are:
-            {chr(10).join(names)}
-            """
-        ))
+        await ctx.send(
+            f"In a random order, the candidates currently standing are:\n"
+            f"{chr(10).join(names)}"
+        )
 
-    #@commands.has_role(ROOT_ROLE_ID)
+    # @commands.has_role(ROOT_ROLE_ID)
     @commands.command()
     async def viewTotals(self, ctx):
         votes = await (await connectPostgres()).fetch(
-    """select candidate, count(*) from (
+            """select candidate, count(*) from (
         select vote_1 as candidate from votes
         union all select vote_2 from votes
     ) t1 group by candidate order by count"""
@@ -140,25 +137,28 @@ class ElectionCog(commands.Cog):
         for candidateid, count in votes:
             candidate = self.getCandidate(candidateid)
             out += f"{str(candidate.emoji)} {candidate.username}[{candidate.id}]: {count}\n"
-        await ctx.send(dedent(
-            f"The following is each member, followed by their number of votes.\n" + out
-        ))
+        await ctx.send(
+            f"The following is each member, followed by their number of votes.\n {out}"
+        )
 
     # @commands.has_role(ROOT_ROLE_ID)
     @commands.command()
-    async def viewVote(self,ctx):
+    async def viewVote(self, ctx):
         if not isinstance(ctx.channel, discord.DMChannel):
             return await ctx.channel.send("You can only use this command in DMs.")
         votes = await (await connectPostgres()).fetch(
-            "SELECT voter_id, vote_1, vote_2, datetime FROM votes WHERE voter_id=$1", ctx.author.id
+            "SELECT voter_id, vote_1, vote_2, datetime FROM votes WHERE voter_id=$1",
+            ctx.author.id,
         )
         if len(votes) > 0:
             vote = votes[0]
-            chosen = [vote[1],vote[2]]
+            chosen = [vote[1], vote[2]]
             candidates = [c for c in self.getAllCandidates() if int(c.id) in chosen]
             names = [
-                str(candidate.emoji) + " " + candidate.username for candidate in candidates]
-            return await ctx.send("You voted for: \n"+chr(10).join(names))
+                str(candidate.emoji) + " " + candidate.username
+                for candidate in candidates
+            ]
+            return await ctx.send("You voted for: \n" + chr(10).join(names))
         else:
             return await ctx.send("You haven't voted yet!")
 
@@ -167,11 +167,15 @@ class ElectionCog(commands.Cog):
         if not self.ready:
             return await ctx.send("I'm just getting ready, hold on!")
         if not isinstance(ctx.channel, discord.DMChannel):
-            return await ctx.send("You can only use this command in DMs.", delete_after=20)
+            return await ctx.send(
+                "You can only use this command in DMs.", delete_after=20
+            )
         if self.START_TIME > datetime.utcnow() or self.END_TIME < datetime.utcnow():
             return await ctx.send("Voting is currently closed.")
         if self.CREATION_CUTOFF < ctx.author.created_at:
-            return await ctx.send("This account was created after the cutoff, and is therefore not eligible to vote.")
+            return await ctx.send(
+                "This account was created after the cutoff, and is therefore not eligible to vote."
+            )
         if (
             len(
                 await (await connectPostgres()).fetch(
@@ -190,17 +194,11 @@ class ElectionCog(commands.Cog):
 
         if self.REACTION_INTERFACE:
             message = await ctx.send(
-                dedent(
-                    """
-                    Click on the reactions representing the users you wish to vote for. Once you're \
-                    done, react with a ✅ to confirm. If you need more time to decide, just ignore this message.
-
-                    **Remember, you can only vote for exactly two candidates, and \
-                    you can't change your mind once you confirm!**
-
-                    *This prompt will expire in 5 minutes.*
-                    """
-                )
+                "Click on the reactions representing the users you wish to vote for. Once you're "
+                "done, react with a ✅ to confirm. If you need more time to decide, just ignore this message.\n\n"
+                "**Remember, you can only vote for exactly two candidates, and "
+                "you can't change your mind once you confirm!**\n\n"
+                "*This prompt will expire in 5 minutes.*"
             )
             for emoji in [candidate.emoji for candidate in self.getAllCandidates()]:
                 await message.add_reaction(emoji)
@@ -212,22 +210,15 @@ class ElectionCog(commands.Cog):
                 for candidate in self.getAllCandidates()
             ]
             message = await ctx.send(
-                dedent(
-                    f"""
-                    Run the `choose <candidate>` command, specifying the Discord Name of the users you wish to \
-                    vote for. If you want to cancel a choice, use `unchoose <candidate>`. Once you're \
-                    done, run the `confirm` command to confirm. If you need more time to decide, just ignore this \
-                    message.
-
-                    **Remember, you can only vote for exactly two candidates, and
-                    you can't change your mind once you confirm!**
-
-                    As a reminder, in a random order, the candidates currently standing are:
-                    **{chr(10).join(names)}**
-
-                    *This session will expire in 5 minutes.*
-                    """
-                )
+                "Run the `choose <candidate>` command, specifying the Discord Name of the users you wish to "
+                "vote for. If you want to cancel a choice, use `unchoose <candidate>`. Once you're "
+                'done, run the `confirm` command to confirm. If you need more time to decide, just ignore this "'
+                "message.\n\n"
+                "**Remember, you can only vote for exactly two candidates, and"
+                "you can't change your mind once you confirm!**\n\n"
+                "As a reminder, in a random order, the candidates currently standing are:"
+                f"**{chr(10).join(names)}**\n\n"
+                "*This session will expire in 5 minutes.*"
             )
 
     @commands.command()
@@ -238,7 +229,9 @@ class ElectionCog(commands.Cog):
         if not self.ready:
             return await channel.send("I'm just getting ready, hold on!")
         if not isinstance(channel, discord.DMChannel):
-            return await channel.send("You can only use this command in DMs.", delete_after=20)
+            return await channel.send(
+                "You can only use this command in DMs.", delete_after=20
+            )
         voteSession = self.voteSessions.get(author.id)
         if not voteSession:
             return await author.send("You don't have a vote session active to confirm.")
@@ -262,12 +255,8 @@ class ElectionCog(commands.Cog):
             )
         else:
             m = await user.send(
-                dedent(
-                    """
-                    Are you sure you wish to vote this way? React with a ✅ to finalise, or a 🚫 to cancel.
-                    *This prompt will expire in 90 seconds. Reactions will appear after 5 seconds.*
-                    """
-                )
+                "Are you sure you wish to vote this way? React with a ✅ to finalise, or a 🚫 to cancel.\n"
+                "*This prompt will expire in 90 seconds. Reactions will appear after 5 seconds.*"
             )
             self.voteSessions[user.id].setMessage(m)
             self.voteSessions[user.id].confirm()
@@ -284,13 +273,9 @@ class ElectionCog(commands.Cog):
         print(info)
         if not info:
             await ctx.send(
-                dedent(
-                    f"""
-                    We couldn't find any information on that candidate! They may not be running, or we might \
-                    have identified the wrong user (We think you're asking about \
-                    `{candidate.name + '#' + candidate.discriminator}`).
-                    """
-                )
+                "We couldn't find any information on that candidate! They may not be running, or we might "
+                "have identified the wrong user (We think you're asking about "
+                f"`{candidate.name + '#' + candidate.discriminator}`)."
             )
         else:
             await ctx.send(embed=info.getEmbed())
@@ -299,17 +284,15 @@ class ElectionCog(commands.Cog):
     async def choose(self, ctx, candidate: discord.User):
         if not isinstance(ctx.channel, discord.DMChannel):
             await ctx.message.delete()
-            return await ctx.send("You can only use this command in DMs.", delete_after=20)
+            return await ctx.send(
+                "You can only use this command in DMs.", delete_after=20
+            )
         info = self.candidates.get(int(candidate.id))
         voteSession = self.voteSessions.get(ctx.author.id)
         if not voteSession:
             return await ctx.send(
-                dedent(
-                    """
-                    You must have an active votesession to make a choice. Use the vote \
-                    command to start a votesession.
-                    """
-                )
+                "You must have an active votesession to make a choice. Use the vote "
+                "command to start a votesession."
             )
         if voteSession.state != "PICK":
             return await ctx.send(
@@ -317,12 +300,8 @@ class ElectionCog(commands.Cog):
             )
         if not info:
             await ctx.send(
-                dedent(
-                    f"""
-                    We couldn't find that candidate! (We think you're asking about \
-                    `{candidate.name + '#' + candidate.discriminator}`).
-                    """
-                )
+                "We couldn't find that candidate! (We think you're asking about "
+                f"`{candidate.name + '#' + candidate.discriminator}`)."
             )
         else:
             voteSession.addChoice(info)
@@ -332,29 +311,25 @@ class ElectionCog(commands.Cog):
     async def unchoose(self, ctx, candidate: discord.User):
         if not isinstance(ctx.channel, discord.DMChannel):
             await ctx.message.delete()
-            return await ctx.send("You can only use this command in DMs.", delete_after=20)
+            return await ctx.send(
+                "You can only use this command in DMs.", delete_after=20
+            )
         info = self.candidates.get(int(candidate.id))
         voteSession = self.voteSessions.get(ctx.author.id)
         if not voteSession:
             return await ctx.send(
-                dedent(
-                    """
-                    You must have an active votesession to make a choice. Use the vote \
-                    command to start a votesession.
-                    """
-                )
+                "You must have an active votesession to make a choice. Use the vote "
+                "command to start a votesession."
             )
         if voteSession.state != "PICK":
             return await ctx.send(
                 "You cannot modify your choices if you are confirming them."
             )
         if not info:
-            await ctx.send(dedent(
-                f"""
-                We couldn't find that candidate! (We think you're asking about" \
-                `{candidate.name + '#' + candidate.discriminator}`).
-                """
-            ))
+            await ctx.send(
+                "We couldn't find that candidate! (We think you're asking about "
+                f"`{candidate.name + '#' + candidate.discriminator}`)."
+            )
         else:
             voteSession.removeChoice(info)
             await ctx.send(f"Removed {info.username} as a choice.")
@@ -362,7 +337,9 @@ class ElectionCog(commands.Cog):
     @commands.has_role(ROOT_ROLE_ID)
     @commands.command()
     async def clearvote(self, ctx, voter: User):
-        await (await connectPostgres()).execute("DELETE FROM votes WHERE voter_id=$1", voter.id)
+        await (await connectPostgres()).execute(
+            "DELETE FROM votes WHERE voter_id=$1", voter.id
+        )
         await ctx.send(f"{voter.mention}'s votes have been cleared")
         return await voter.send(
             f"Your votes were cleared by <@{ctx.author.id}> - you can now place a new set."
