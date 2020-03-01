@@ -5,9 +5,9 @@ An implementation of a logging.Handler for sending messages to Discord
 import datetime
 import logging
 
-from electionsbot.constants import LOGGING_CHANNEL_ID
 from discord import Color, Embed
 from discord.ext import commands
+from electionsbot.constants import LOGGING_CHANNEL_ID
 
 
 LEVEL_COLORS = {
