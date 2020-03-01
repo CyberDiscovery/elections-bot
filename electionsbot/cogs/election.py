@@ -10,7 +10,7 @@ import re
 import time
 import asyncpg
 from datetime import datetime
-from electionsbot.constants import EMOJI_SERVER_ID, PostgreSQL
+from electionsbot.constants import EMOJI_SERVER_ID, PostgreSQL, ROOT_ROLE_ID
 
 
 async def connectPostgres():
@@ -105,17 +105,6 @@ class ElectionCog(commands.Cog):
         print(candidates)
         random.shuffle(candidates)  # Randomise the order each time for neutrality.
         return candidates
-
-    @commands.command()
-    async def candidateInfo(self, ctx, candidate: discord.User):
-        info = self.candidates.get(int(candidate.id))
-        print(info)
-        if not info:
-            await ctx.send("We couldn't find any information on that candidate! They may not be running, or we might"
-                           " have identified the wrong user (We think you're asking about"
-                           f" `{candidate.name + '#' + candidate.discriminator}`).")
-        else:
-            await ctx.send(embed=info.getEmbed())
 
     @commands.command()
     async def candidateList(self, ctx):
@@ -242,11 +231,12 @@ class ElectionCog(commands.Cog):
             voteSession.removeChoice(info)
             await ctx.send(f"Removed {info.username} as a choice.")
 
+    @commands.has_role(ROOT_ROLE_ID)
     @commands.command()
     async def clearvote(self, ctx, voter: User):
-        self.connectPostgres().execute("DELETE FROM votes WHERE voter_id=$1", User.id)
-        await ctx.send(f"<@{User.id}>'s votes have been cleared")
-        return await self.bot.send_message(User, f"Your votes were cleared by <@{ctx.author.id}>")
+        await (await connectPostgres()).execute("DELETE FROM votes WHERE voter_id=$1", voter.id)
+        await ctx.send(f"{voter.mention}'s votes have been cleared")
+        return await voter.send(f"Your votes were cleared by <@{ctx.author.id}> - you can now place a new set.")
 
 
     # Reaction Interface - Suited for under 20 Members
