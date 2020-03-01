@@ -1,6 +1,5 @@
 import random
 import re
-import time
 import urllib.request
 from asyncio import sleep
 from datetime import datetime
@@ -32,13 +31,16 @@ async def connectPostgres():
 class ElectionCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.candidateData = load(open("testdata.json", "r"))
+        data = load(open("testdata.json", "r"))
+        self.candidateData = data["candidates"]
         self.candidates = {}
         self.voteSessions = {}
         # CONFIG SETTINGS
         self.CHOICE_MINIMUM = 2
         self.CHOICE_MAXIMUM = 2
         self.ready = False
+        self.START_TIME = datetime.utcfromtimestamp(data["starttime"])
+        self.END_TIME = datetime.utcfromtimestamp(data["endtime"])
         # This will be automatically disabled if the number of candidates reaches 20.
         self.REACTION_INTERFACE = False
 
@@ -127,11 +129,8 @@ class ElectionCog(commands.Cog):
             return await ctx.send("I'm just getting ready, hold on!")
         if not isinstance(ctx.channel, discord.DMChannel):
             return await ctx.send("You can only use this command in DMs.")
-        print(
-            await (await connectPostgres()).fetch(
-                "SELECT voter_id FROM votes WHERE voter_id=$1", ctx.author.id
-            )
-        )
+        if self.START_TIME > datetime.utcnow() or self.END_TIME < datetime.utcnow():
+            return await ctx.send("Voting is currently closed.")
         if (
             len(
                 await (await connectPostgres()).fetch(
@@ -383,7 +382,7 @@ class Candidate:
 class VoteSession:
     def __init__(self, user, timeout):
         self.user = user
-        self.exp = time.time() + timeout
+        self.exp = datetime.utcnow().timestamp() + timeout
         self.state = "PICK"
         self.choices = []
         # CONFIG
@@ -393,10 +392,10 @@ class VoteSession:
         self.message = msg
 
     def setTimeout(self, secs):
-        self.exp = time.time() + secs
+        self.exp = datetime.utcnow().timestamp() + secs
 
     def hasTimedOut(self):
-        return self.exp < time.time()
+        return self.exp < datetime.utcnow().timestamp()
 
     def addChoice(self, choice):
         if self.state == "LOCK" or choice in self.choices:
