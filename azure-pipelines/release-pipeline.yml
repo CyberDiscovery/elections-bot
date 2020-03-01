@@ -38,20 +38,30 @@ stages:
 
         steps:
         - task: Kubernetes@1
-          displayName: 'Delete Old Cluster'
-          inputs:
-            kubernetesServiceEndpoint: 'Bot Environment-default-1568896840810'
-            command: delete
-            arguments: 'deployment.extensions/cyberdisc-bot deployment.extensions/postgres'
-            versionSpec: 1.15.0
-
-        - task: Kubernetes@1
           displayName: 'Deploy to Google Kubernetes Engine'
           inputs:
-            kubernetesServiceEndpoint: 'Bot Environment-default-1568896840810'
-            command: apply
+            connectionType: 'Kubernetes Service Connection'
+            kubernetesServiceEndpoint: 'Google Kubernetes Engine'
+            command: 'apply'
             useConfigurationFile: true
             configuration: '$(System.DefaultWorkingDirectory)/deployment.yaml'
-            secretType: generic
             forceUpdate: false
-            versionSpec: 1.15.0
+            versionSpec: '1.15.0'
+        
+        - task: Kubernetes@1
+          displayName: 'Rolling Update Bot Container'
+          inputs:
+            connectionType: 'Kubernetes Service Connection'
+            kubernetesServiceEndpoint: 'Google Kubernetes Engine'
+            namespace: 'default'
+            command: 'rolling-update'
+            arguments: 'electionsbot --image=cyberdiscovery/electionsbot:latest'
+
+        - task: Kubernetes@1
+          displayName: 'Rolling Update Postgres Container'
+          inputs:
+            connectionType: 'Kubernetes Service Connection'
+            kubernetesServiceEndpoint: 'Google Kubernetes Engine'
+            namespace: 'default'
+            command: 'rolling-update'
+            arguments: 'electionsbot --image=postgres:latest'
