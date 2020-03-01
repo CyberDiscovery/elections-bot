@@ -12,6 +12,36 @@ spec:
   selector:
     app: "postgres-elections"
 ---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: postgres-pv-volume
+  labels:
+    type: local
+    app: postgres
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: "/mnt/data"
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: postgres-elections-pv-claim
+  labels:
+    app: postgres-elections
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+---
 apiVersion: "apps/v1"
 kind: "Deployment"
 metadata:
@@ -29,6 +59,9 @@ spec:
       containers:
       - name: "postgres-elections"
         image: "postgres:latest"
+        volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: postgres-elections
         env:
         - name: "POSTGRES_DB"
           valueFrom:
@@ -47,7 +80,11 @@ spec:
               key: "PGPASSWORD"
         ports:
         - containerPort: 5432
-          name: postgredb-elections
+          name: postgres-elections
+      volumes:
+        - name: postgres-elections
+          persistentVolumeClaim:
+            claimName: postgres-elections-pv-claim
 ---
 apiVersion: "apps/v1"
 kind: "Deployment"
