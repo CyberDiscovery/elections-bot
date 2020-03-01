@@ -9,6 +9,7 @@ import urllib.request
 import re
 import time
 import asyncpg
+from datetime import now
 from electionsbot.constants import EMOJI_SERVER_ID, PostgreSQL
 
 
@@ -239,10 +240,13 @@ class VoteSession:
         self.state = "LOCK"
 
     def commit(self):
-        # TODO: Database Logic
-        # Here, the votes chosen within this session should be committed to the database.
-        # Useful: self.user gives the voting user; self.choices should give an array of Candidates chosen.
-        connection = self.connectPostgres()
+        self.connectPostgres().execute(
+            "INSERT INTO votes(user_id, vote_1, vote_2, datetime) VALUES($1, $2, $3, $4) ON CONFLICT DO NOTHING;",
+            self.user,
+            self.choices[0].username,
+            self.choices[1].username,
+            now().timestamp()
+        )
 
 
 def setup(bot: commands.Bot):
