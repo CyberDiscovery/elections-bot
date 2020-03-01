@@ -12,6 +12,28 @@ spec:
   selector:
     app: "elections-db"
 ---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+parameters:
+  type: pd-standard
+provisioner: kubernetes.io/gce-pd
+reclaimPolicy: Retain
+volumeBindingMode: Immediate
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: elections-claim
+  labels:
+    app: elections-db
+spec:
+  storageClassName: default
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+---
 kind: PersistentVolume
 apiVersion: v1
 metadata:
@@ -27,20 +49,6 @@ spec:
     - ReadWriteMany
   hostPath:
     path: "/mnt/data"
----
-kind: PersistentVolumeClaim
-apiVersion: v1
-metadata:
-  name: elections-claim
-  labels:
-    app: elections-db
-spec:
-  storageClassName: manual
-  accessModes:
-    - ReadWriteMany
-  resources:
-    requests:
-      storage: 5Gi
 ---
 apiVersion: "apps/v1"
 kind: "Deployment"
