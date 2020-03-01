@@ -305,7 +305,7 @@ class ElectionCog(commands.Cog):
     @commands.has_role(ROOT_ROLE_ID)
     @commands.command()
     async def clearvote(self, ctx, voter: User):
-        await (await self.connectPostgres()).execute("DELETE FROM votes WHERE voter_id=$1", voter.id)
+        await (await connectPostgres()).execute("DELETE FROM votes WHERE voter_id=$1", voter.id)
         await ctx.send(f"{voter.mention}'s votes have been cleared")
         return await voter.send(
             f"Your votes were cleared by <@{ctx.author.id}> - you can now place a new set."
