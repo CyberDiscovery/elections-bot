@@ -124,6 +124,8 @@ class ElectionCog(commands.Cog):
         if not isinstance(ctx.channel,discord.DMChannel):
             return await ctx.send(
                 "You can only use this command in DMs.")
+        if await (await connectPostgres()).fetch("SELECT voter_id FROM votes WHERE voter_id=$1", ctx.author.id) is not None:
+            return await ctx.send("You have already voted!")
         currentSession = self.voteSessions.get(ctx.author.id)
         if currentSession and not currentSession.hasTimedOut():
             return await ctx.send("You already have an active voting session! Please use that, or wait for it to expire.")
