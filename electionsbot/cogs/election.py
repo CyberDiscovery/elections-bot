@@ -126,7 +126,7 @@ class ElectionCog(commands.Cog):
             f"{chr(10).join(names)}"
         )
 
-    @commands.check_any(commands.has_role(ROOT_ROLE_ID),commands.dm_only())
+    @commands.check_any(commands.has_role(ROOT_ROLE_ID), commands.dm_only())
     @commands.command(aliases=["listAll"])
     async def allCandidateDetails(self, ctx):
         for candidate in self.getAllCandidates():
@@ -231,7 +231,7 @@ class ElectionCog(commands.Cog):
                 "*This session will expire in 5 minutes.*"
             )
 
-    @commands.command(aliases=["lock","submit"])
+    @commands.command(aliases=["lock", "submit"])
     async def confirm(self, ctx):
         await self.confirm_callback(ctx.channel, ctx.author)
 
@@ -276,7 +276,7 @@ class ElectionCog(commands.Cog):
             await m.add_reaction("✅")
             await m.add_reaction("🚫")
 
-    @commands.command(aliases=["info","candidate"])
+    @commands.command(aliases=["info", "candidate"])
     async def candidateInfo(self, ctx, *, candidate: User):
         info = self.candidates.get(int(candidate.id))
         print(info)
@@ -289,7 +289,7 @@ class ElectionCog(commands.Cog):
         else:
             await ctx.send(embed=info.getEmbed())
 
-    @commands.command(aliases=["pick","select"])
+    @commands.command(aliases=["pick", "select"])
     async def choose(self, ctx, *, candidate: User):
         if not isinstance(ctx.channel, discord.DMChannel):
             await ctx.message.delete()
@@ -316,7 +316,7 @@ class ElectionCog(commands.Cog):
             voteSession.addChoice(info)
             await ctx.send(f"Added {info.username} as a choice.")
 
-    @commands.command(aliases=["unpick","deselect"])
+    @commands.command(aliases=["unpick", "deselect"])
     async def unchoose(self, ctx, *, candidate: User):
         if not isinstance(ctx.channel, discord.DMChannel):
             await ctx.message.delete()
