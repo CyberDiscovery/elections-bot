@@ -12,36 +12,36 @@ spec:
   selector:
     app: "elections-db"
 ---
-#kind: PersistentVolume
-#apiVersion: v1
-#metadata:
-#  name: elections-volume
-#  labels:
-#    type: local
-#    app: postgres
-#spec:
-#  storageClassName: default
-#  capacity:
-#    storage: 5Gi
-#  accessModes:
-#    - ReadWriteMany
-#  hostPath:
-#    path: "/mnt/data"
-#---
-#kind: PersistentVolumeClaim
-#apiVersion: v1
-#metadata:
-#  name: elections-claim
-#  labels:
-#    app: postgres
-#spec:
-#  storageClassName: default
-#  accessModes:
-#    - ReadWriteMany
-#  resources:
-#    requests:
-#      storage: 5Gi
-#---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: elections-volume
+  labels:
+    type: local
+    app: postgres
+spec:
+  storageClassName: elections
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: "/mnt/data"
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: elections-claim
+  labels:
+    app: postgres
+spec:
+  storageClassName: elections
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+---
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
