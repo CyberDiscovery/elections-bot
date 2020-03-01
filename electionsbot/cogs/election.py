@@ -216,8 +216,9 @@ class ElectionCog(commands.Cog):
                 for candidate in self.getAllCandidates()
             ]
             message = await ctx.send(
-                "Run the `choose <candidate>` command, specifying the Discord Name of the users you wish to "
-                "vote for. If you want to cancel a choice, use `unchoose <candidate>`. Once you're "
+                "Run the `choose <candidate>` command, specifying the Discord Name of the user you wish to "
+                "vote for; and repeat this for each choice you wish to make.\n"
+                "If you want to cancel a choice, use `unchoose <candidate>`. Once you're "
                 'done, run the `confirm` command to confirm. If you need more time to decide, just ignore this "'
                 "message.\n\n"
                 "**Remember, you can only vote for exactly two candidates, and"
@@ -244,8 +245,8 @@ class ElectionCog(commands.Cog):
         user = author
         chosenCandidates = voteSession.choices
         await user.send(
-            f"""You are about to vote for the following candidates:** \
-            {chr(10).join([str(c.emoji) + " " + c.username for c in chosenCandidates])}**"""
+            f"You are about to vote for the following candidates:\n** "
+            f'{chr(10).join([str(c.emoji) + " " + c.username for c in chosenCandidates])}**'
         )
         if len(chosenCandidates) > self.CHOICE_MAXIMUM:
             return await user.send(
@@ -273,7 +274,7 @@ class ElectionCog(commands.Cog):
             await m.add_reaction("🚫")
 
     @commands.command()
-    async def candidateInfo(self, ctx, candidate: User):
+    async def candidateInfo(self, ctx, *, candidate: User):
         info = self.candidates.get(int(candidate.id))
         print(info)
         if not info:
@@ -286,7 +287,7 @@ class ElectionCog(commands.Cog):
             await ctx.send(embed=info.getEmbed())
 
     @commands.command()
-    async def choose(self, ctx, candidate: discord.User):
+    async def choose(self, ctx, *, candidate: discord.User):
         if not isinstance(ctx.channel, discord.DMChannel):
             await ctx.message.delete()
             return await ctx.send(
@@ -313,7 +314,7 @@ class ElectionCog(commands.Cog):
             await ctx.send(f"Added {info.username} as a choice.")
 
     @commands.command()
-    async def unchoose(self, ctx, candidate: discord.User):
+    async def unchoose(self, ctx, *, candidate: discord.User):
         if not isinstance(ctx.channel, discord.DMChannel):
             await ctx.message.delete()
             return await ctx.send(
