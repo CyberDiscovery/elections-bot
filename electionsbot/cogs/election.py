@@ -2,7 +2,8 @@ import discord
 from discord import Embed, Member, User
 from discord.ext import commands
 from json import load
-import random, urllib.request, re
+from asyncio import sleep
+import random, urllib.request, re, time
 from ..constants import EMOJI_SERVER_ID
 
 class ElectionCog(commands.Cog):
@@ -10,14 +11,20 @@ class ElectionCog(commands.Cog):
         self.bot = bot
         self.candidateData = load(open("testdata.json","r"))
         self.candidates = {}
+        self.voteSessions = {}
+        # CONFIG SETTINGS
+        self.CHOICE_MAXIMUM = 2
+        self.ready = False
+
+
+
+
 
     @commands.Cog.listener()
     async def on_ready(self):
         # Load up all the relevant candidates!
         self.backendGuild = self.bot.get_guild(EMOJI_SERVER_ID)
-        for emoji in await self.backendGuild.fetch_emojis():
-            if emoji.user == self.bot.user:
-                await emoji.delete()
+        emoji = await self.backendGuild.fetch_emojis()
         for id,info in self.candidateData.items():
             candidate = Candidate(id)
             user = self.bot.get_user(int(id))
@@ -26,19 +33,38 @@ class ElectionCog(commands.Cog):
                 candidate.avatar = user.avatar_url
                 emojiimage = await candidate.avatar.read()
                 emojiname = re.sub(r'\W+', '', candidate.username.replace(" ","_"))
-                candidate.emoji = await self.backendGuild.create_custom_emoji(name=emojiname,image=emojiimage)
+                for x in emoji:
+                    if x.name == emojiname:
+                        candidate.emoji = x
+                        break
+                else:
+                    candidate.emoji = await self.backendGuild.create_custom_emoji(name=emojiname,image=emojiimage)
+                print("Done!")
             else:
                 candidate.username = info.get("username")
                 candidate.avatar = info.get("avatar")
                 emojiimage = urllib.request.urlopen(url=candidate.avatar)
                 emojiname = re.sub(r'\W+', '', candidate.username.replace(" ", "_"))
-                candidate.emoji = await self.backendGuild.create_custom_emoji(name=emojiname, image=emojiimage)
+                for x in emoji:
+                    if x.name == emojiname:
+                        candidate.emoji = x
+                        break
+                else:
+                    candidate.emoji = await self.backendGuild.create_custom_emoji(name=emojiname, image=emojiimage)
+                print("Done!")
             candidate.campaign = info.get("campaign")
             self.candidates[int(id)] = candidate
         print(self.candidates)
+        self.ready = True
 
     def getCandidate(self, candidateID):
         return self.candidates.get(candidateID)
+
+    def getCandidateFromEmoji(self, emoji):
+        for c in self.candidates.values():
+            if c.emoji == emoji:
+                return c
+        return None
 
     def getAllCandidates(self):
         candidates = list(self.candidates.values())
@@ -65,20 +91,77 @@ class ElectionCog(commands.Cog):
 
     @commands.command()
     async def vote(self, ctx):
-        if ctx.channel.guild:
-            await ctx.message.author.send("")
-            await ctx.send("Voting takes place in DMs - I've sent you one explaining the process just now!")
-
-    @commands.command()
-    async def voteDM(self, ctx):
+        if not self.ready:
+            return await ctx.send(
+                "I'm just getting ready, hold on!")
+        if not isinstance(ctx.channel,discord.DMChannel):
+            return await ctx.send(
+                "You can only use this command in DMs.")
+        if self.voteSessions.get(ctx.author.id):
+            return await ctx.send("You already have an active voting session! Please use that, or wait for it to expire.")
         m = await ctx.send("Click on the reactions representing the users you wish to vote for. Once you're done, react"
-                           " with a ✅ to confirm. **Remember, you can only vote for two candidates, and you can't change"
+                           " with a ✅ to confirm. If you need more time to decide, just ignore this message. \n"
+                           "**Remember, you can only vote for two candidates, and you can't change"
                            " your mind once you confirm!**"
                            "\n*This prompt will expire in 5 minutes.*")
+        self.voteSessions[ctx.author.id] = VoteSession(user=ctx.author,timeout=300)
+        self.voteSessions[ctx.author.id].setMessage(m)
         for c in [x.emoji for x in self.getAllCandidates()]:
             await m.add_reaction(c)
         await m.add_reaction("✅")
 
+    @commands.Cog.listener()
+    async def on_reaction_add(self,reaction, user):
+        voteSession = self.voteSessions.get(user.id)
+        if not voteSession or not self.ready:
+            return
+        if voteSession.message.id != reaction.message.id:
+            return
+        if reaction.emoji == "✅" and not voteSession.hasTimedOut() and voteSession.state == "PICK":
+            reactions = reaction.message.reactions
+            print(reactions)
+            chosenCandidates = []
+            for reaction in reactions:
+                if user in await reaction.users().flatten():
+                    x = self.getCandidateFromEmoji(reaction.emoji)
+                    if x:
+                        voteSession.addChoice(x)
+            if len(chosenCandidates) > self.CHOICE_MAXIMUM:
+                voteSession.clearChoice()
+                return await user.send(f"You've selected too many candidates. You can only select a maximum of {self.CHOICE_MAXIMUM} candidates.\n"
+                                 f"Please modify your choices, and retoggle the ✅ reaction once done.")
+            if len(chosenCandidates) == 0:
+                voteSession.clearChoice()
+                return await user.send(
+                    f"You've not chosen anyone! You need to select at least one candidate in order to vote.\n"
+                    f"Please modify your choices, and retoggle the ✅ reaction once done.")
+            else:
+                txt = "You are about to vote for the following candidates:**\n" + "\n".join([c.username for c in chosenCandidates])
+            m = await user.send(txt
+                + "**\nAre you sure you wish to vote this way? React with a ✅ to finalise, or a 🚫 to cancel."
+                  "\n*This prompt will expire in 90 seconds. Reactions will appear after 5 seconds.*")
+            self.voteSessions[user.id].setMessage(m)
+            self.voteSessions[user.id].confirm()
+            self.voteSessions[user.id].setTimeout(95)
+
+            await sleep(5)
+            await m.add_reaction("✅")
+            await m.add_reaction("⬜")
+            await m.add_reaction("🚫")
+        elif not voteSession.hasTimedOut() and voteSession.state == "CONFIRM":
+            if reaction.emoji == "✅":
+                # Votes have been confirmed. Go for it!
+                self.voteSessions[user.id].commit()
+                # Committed the vote, now delete the session
+                del self.voteSessions[user.id]
+                m = await user.send("Your vote has been confirmed! Thank you :)")
+            elif reaction.emoji == "🚫":
+                # Vote was canceled, just delete the session without committing.
+                del self.voteSessions[user.id]
+                m = await user.send("OK, I've canceled the voting session. When you've made up your mind, use the command again.")
+        elif voteSession.hasTimedOut():
+            del self.voteSessions[user.id]
+            m = await user.send("The voting session you had has now expired; you need to start a new one.")
 
 
 
@@ -97,6 +180,51 @@ class Candidate:
         output.set_footer(text="To vote for this candidate, do XYZ.")
         return output
 
+class VoteSession:
+    def __init__(self, user, timeout):
+        self.user = user
+        self.exp = time.time() + timeout
+        self.state = "PICK"
+        self.choices = []
+        # CONFIG
+        self.MAX_CHOICES = 2
+
+    def setMessage(self,msg):
+        self.message = msg
+
+    def setTimeout(self,secs):
+        self.exp = time.time() + secs
+
+    def hasTimedOut(self):
+        return self.exp < time.time()
+
+    def addChoice(self, choice):
+        if len(self.choices) >= self.MAX_CHOICES or self.state == "LOCK" or choice in self.choices:
+            return False
+        self.choices.append(choice)
+        return True
+
+    def removeChoice(self, choice):
+        if self.state == "LOCK" or choice not in self.choices:
+            return False
+        self.choices.remove(choice)
+        return True
+
+    def clearChoice(self):
+        self.choices = []
+        return True
+
+    def confirm(self):
+        self.state = "CONFIRM"
+
+    def lock(self):
+        self.state = "LOCK"
+
+    def commit(self):
+        # TODO: Database Logic
+        # Here, the votes chosen within this session should be committed to the database.
+        # Useful: self.user gives the voting user; self.choices should give an array of Candidates chosen.
+        pass
 
 
 def setup(bot: commands.Bot):
