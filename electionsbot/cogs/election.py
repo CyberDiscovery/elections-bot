@@ -59,7 +59,7 @@ class ElectionCog(commands.Cog):
                 candidate.username = user.name + "#" + user.discriminator
                 candidate.avatar = user.avatar_url
                 emojiimage = await candidate.avatar.read()
-                emojiname = re.sub(r"\W+", "", candidate.username.replace(" ", "_"))
+                emojiname = re.sub(r"\W+", "", (user.name[:28] + user.discriminator).replace(" ", "_"))
                 for x in emoji:
                     if x.name == emojiname:
                         candidate.emoji = x
