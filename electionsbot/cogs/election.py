@@ -119,8 +119,10 @@ class ElectionCog(commands.Cog):
             for candidate in self.getAllCandidates()
         ]
         await ctx.send(dedent(
-            f"""In a random order, the candidates currently standing are:
-            {chr(10).join(names)}"""
+            f"""
+            In a random order, the candidates currently standing are:
+            {chr(10).join(names)}
+            """
         ))
 
     # @commands.has_role(ROOT_ROLE_ID)
@@ -163,13 +165,15 @@ class ElectionCog(commands.Cog):
         if self.REACTION_INTERFACE:
             message = await ctx.send(
                 dedent(
-                    """Click on the reactions representing the users you wish to vote for. Once you're \
-                done, react with a ✅ to confirm. If you need more time to decide, just ignore this message.
+                    """
+                    Click on the reactions representing the users you wish to vote for. Once you're \
+                    done, react with a ✅ to confirm. If you need more time to decide, just ignore this message.
 
-                **Remember, you can only vote for exactly two candidates, and \
-                you can't change your mind once you confirm!**
+                    **Remember, you can only vote for exactly two candidates, and \
+                    you can't change your mind once you confirm!**
 
-                *This prompt will expire in 5 minutes.*"""
+                    *This prompt will expire in 5 minutes.*
+                    """
                 )
             )
             for emoji in [candidate.emoji for candidate in self.getAllCandidates()]:
@@ -183,17 +187,20 @@ class ElectionCog(commands.Cog):
             ]
             message = await ctx.send(
                 dedent(
-                    f"""Run the `choose <candidate>` command, specifying the Discord Name of the users you wish to vote for. \
-                If you want to cancel a choice, use `unchoose <candidate>`. Once you're \
-                done, run the `confirm` command to confirm. If you need more time to decide, just ignore this message.
+                    f"""
+                    Run the `choose <candidate>` command, specifying the Discord Name of the users you wish to \
+                    vote for. If you want to cancel a choice, use `unchoose <candidate>`. Once you're \
+                    done, run the `confirm` command to confirm. If you need more time to decide, just ignore this \
+                    message.
+                    
+                    **Remember, you can only vote for exactly two candidates, and
+                    you can't change your mind once you confirm!**
 
-                **Remember, you can only vote for exactly two candidates, and
-                 you can't change your mind once you confirm!**
+                    As a reminder, in a random order, the candidates currently standing are:
+                    **{chr(10).join(names)}**
 
-                As a reminder, in a random order, the candidates currently standing are:
-                **{chr(10).join(names)}**
-
-                *This session will expire in 5 minutes.*"""
+                    *This session will expire in 5 minutes.*
+                    """
                 )
             )
 
@@ -231,8 +238,9 @@ class ElectionCog(commands.Cog):
             m = await user.send(
                 dedent(
                     """
-                Are you sure you wish to vote this way? React with a ✅ to finalise, or a 🚫 to cancel.
-                *This prompt will expire in 90 seconds. Reactions will appear after 5 seconds.*"""
+                    Are you sure you wish to vote this way? React with a ✅ to finalise, or a 🚫 to cancel.
+                    *This prompt will expire in 90 seconds. Reactions will appear after 5 seconds.*
+                    """
                 )
             )
             self.voteSessions[user.id].setMessage(m)
@@ -251,9 +259,11 @@ class ElectionCog(commands.Cog):
         if not info:
             await ctx.send(
                 dedent(
-                    f"""We couldn't find any information on that candidate! They may not be running, or we might \
-                have identified the wrong user (We think you're asking about \
-                `{candidate.name + '#' + candidate.discriminator}`)."""
+                    f"""
+                    We couldn't find any information on that candidate! They may not be running, or we might \
+                    have identified the wrong user (We think you're asking about \
+                    `{candidate.name + '#' + candidate.discriminator}`).
+                    """
                 )
             )
         else:
@@ -269,8 +279,10 @@ class ElectionCog(commands.Cog):
         if not voteSession:
             return await ctx.send(
                 dedent(
-                    """You must have an active votesession to make a choice. Use the vote \
-                                  command to start a votesession."""
+                    """
+                    You must have an active votesession to make a choice. Use the vote \
+                    command to start a votesession.
+                    """
                 )
             )
         if voteSession.state != "PICK":
@@ -280,8 +292,10 @@ class ElectionCog(commands.Cog):
         if not info:
             await ctx.send(
                 dedent(
-                    f"""We couldn't find that candidate! (We think you're asking about \
-                `{candidate.name + '#' + candidate.discriminator}`)."""
+                    f"""
+                    We couldn't find that candidate! (We think you're asking about \
+                    `{candidate.name + '#' + candidate.discriminator}`).
+                    """
                 )
             )
         else:
@@ -298,8 +312,10 @@ class ElectionCog(commands.Cog):
         if not voteSession:
             return await ctx.send(
                 dedent(
-                    """You must have an active votesession to make a choice. Use the vote \
-                                  command to start a votesession."""
+                    """
+                    You must have an active votesession to make a choice. Use the vote \
+                    command to start a votesession.
+                    """
                 )
             )
         if voteSession.state != "PICK":
@@ -308,8 +324,10 @@ class ElectionCog(commands.Cog):
             )
         if not info:
             await ctx.send(dedent(
-                f"""We couldn't find that candidate! (We think you're asking about" \
-                `{candidate.name + '#' + candidate.discriminator}`)."""
+                f"""
+                We couldn't find that candidate! (We think you're asking about" \
+                `{candidate.name + '#' + candidate.discriminator}`).
+                """
             ))
         else:
             voteSession.removeChoice(info)
