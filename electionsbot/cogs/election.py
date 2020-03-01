@@ -9,9 +9,22 @@ import urllib.request
 import re
 import time
 import asyncpg
-from datetime import now
+from datetime import datetime
 from electionsbot.constants import EMOJI_SERVER_ID, PostgreSQL
 
+
+async def connectPostgres():
+    connection = await asyncpg.connect(
+        host=PostgreSQL.PGHOST,
+        port=PostgreSQL.PGPORT,
+        user=PostgreSQL.PGUSER,
+        password=PostgreSQL.PGPASSWORD,
+        database=PostgreSQL.PGDATABASE,
+    )
+    await connection.execute(
+        "CREATE TABLE IF NOT EXISTS votes (voter_id bigint PRIMARY KEY, vote_1 bigint, vote_2 bigint, datetime timestamp)"
+    )
+    return connection
 
 class ElectionCog(commands.Cog):
     def __init__(self, bot):
@@ -20,6 +33,7 @@ class ElectionCog(commands.Cog):
         self.candidates = {}
         self.voteSessions = {}
         # CONFIG SETTINGS
+        self.CHOICE_MINIMUM = 2
         self.CHOICE_MAXIMUM = 2
         self.ready = False
         # This will be automatically disabled if the number of candidates reaches 20.
@@ -85,19 +99,6 @@ class ElectionCog(commands.Cog):
         print(candidates)
         random.shuffle(candidates)  # Randomise the order each time for neutrality.
         return candidates
-
-    async def connectPostgres(self):
-        connection = await asyncpg.connect(
-            host=PostgreSQL.PGHOST,
-            port=PostgreSQL.PGPORT,
-            user=PostgreSQL.PGUSER,
-            password=PostgreSQL.PGPASSWORD,
-            database=PostgreSQL.PGDATABASE,
-        )
-        await connection.execute(
-            "CREATE TABLE IF NOT EXISTS votes (voter_id bigint PRIMARY KEY, vote_1 bigint, vote_2 bigint, datetime timestamp)"
-        )
-        return connection
 
     @commands.command()
     async def candidateInfo(self, ctx, candidate: User):
@@ -168,17 +169,17 @@ class ElectionCog(commands.Cog):
         user = author
         chosenCandidates = voteSession.choices
         await user.send("You are about to vote for the following candidates:**\n" + "\n".join(
-            [c.username for c in chosenCandidates])+"**")
+            [str(c.emoji) + " " + c.username for c in chosenCandidates])+"**")
         if len(chosenCandidates) > self.CHOICE_MAXIMUM:
             return await user.send(
                 f"You've selected too many candidates. You can only select a maximum of {self.CHOICE_MAXIMUM} candidates.\n"
                 f"Please modify your choices, and confirm again once done.")
-        if len(chosenCandidates) == 0:
+        if len(chosenCandidates) < self.CHOICE_MINIMUM:
             return await user.send(
-                f"You've selected too few candidates! You need to select exactly two candidates.\n"
+                f"You've selected too few candidates! You need to select a minimum of {self.CHOICE_MINIMUM} candidates.\n"
                 f"Please modify your choices, and confirm again once done.")
         else:
-            m = await user.send("**\nAre you sure you wish to vote this way? React with a ✅ to finalise, or a 🚫 to cancel."
+            m = await user.send("\nAre you sure you wish to vote this way? React with a ✅ to finalise, or a 🚫 to cancel."
                                   "\n*This prompt will expire in 90 seconds. Reactions will appear after 5 seconds.*")
             self.voteSessions[user.id].setMessage(m)
             self.voteSessions[user.id].confirm()
@@ -204,6 +205,10 @@ class ElectionCog(commands.Cog):
     async def choose(self, ctx, candidate: User):
         info = self.candidates.get(int(candidate.id))
         voteSession = self.voteSessions.get(ctx.author.id)
+        if not voteSession:
+            return await ctx.send(f"You must have an active votesession to make a choice.")
+        if voteSession.state != "PICK":
+            return await ctx.send(f"You cannot modify your choices if you are confirming them.")
         if not info:
             await ctx.send("We couldn't find that candidate! (We think you're asking about"
                            f" `{candidate.name + '#' + candidate.discriminator}`).")
@@ -215,6 +220,10 @@ class ElectionCog(commands.Cog):
     async def unchoose(self, ctx, candidate: User):
         info = self.candidates.get(int(candidate.id))
         voteSession = self.voteSessions.get(ctx.author.id)
+        if not voteSession:
+            return await ctx.send(f"You must have an active votesession to make a choice.")
+        if voteSession.state != "PICK":
+            return await ctx.send(f"You cannot modify your choices if you are confirming them.")
         if not info:
             await ctx.send("We couldn't find that candidate! (We think you're asking about"
                            f" `{candidate.name + '#' + candidate.discriminator}`).")
@@ -243,7 +252,7 @@ class ElectionCog(commands.Cog):
         elif not voteSession.hasTimedOut() and voteSession.state == "CONFIRM":
             if reaction.emoji == "✅":
                 # Votes have been confirmed. Go for it!
-                self.voteSessions[user.id].commit()
+                await self.voteSessions[user.id].commit()
                 # Committed the vote, now delete the session
                 del self.voteSessions[user.id]
                 m = await user.send("Your vote has been confirmed! Thank you :)")
@@ -330,13 +339,13 @@ class VoteSession:
     def lock(self):
         self.state = "LOCK"
 
-    def commit(self):
-        self.connectPostgres().execute(
+    async def commit(self):
+        await (await connectPostgres()).execute(
             "INSERT INTO votes(voter_id, vote_1, vote_2, datetime) VALUES($1, $2, $3, $4) ON CONFLICT DO NOTHING;",
-            self.user,
-            self.choices[0].username,
-            self.choices[1].username,
-            now().timestamp()
+            self.user.id,
+            int(self.choices[0].id),
+            int(self.choices[1].id),
+            datetime.now()
         )
 
 
