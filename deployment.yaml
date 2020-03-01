@@ -12,32 +12,10 @@ spec:
   selector:
     app: "elections-db"
 ---
-apiVersion: storage.k8s.io/v1
-kind: StorageClass
-parameters:
-  type: pd-standard
-provisioner: kubernetes.io/gce-pd
-reclaimPolicy: Retain
-volumeBindingMode: Immediate
----
-kind: PersistentVolumeClaim
-apiVersion: v1
-metadata:
-  name: elections-claim
-  labels:
-    app: elections-db
-spec:
-  storageClassName: default
-  accessModes:
-    - ReadWriteMany
-  resources:
-    requests:
-      storage: 5Gi
----
 kind: PersistentVolume
 apiVersion: v1
 metadata:
-  name: postgres-pv-volume
+  name: elections-volume
   labels:
     type: local
     app: postgres
@@ -50,47 +28,58 @@ spec:
   hostPath:
     path: "/mnt/data"
 ---
-apiVersion: "apps/v1"
-kind: "Deployment"
+kind: PersistentVolumeClaim
+apiVersion: v1
 metadata:
-  name: "elections-db"
+  name: elections-claim
+  labels:
+    app: postgres
+spec:
+  storageClassName: default
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: elections-db
 spec:
   replicas: 1
-  selector:
-    matchLabels:
-      app: "elections-db"
   template:
     metadata:
       labels:
-        app: "elections-db"
+        app: postgres
     spec:
       containers:
-      - name: "elections-db"
-        image: "postgres:11"
-        volumeMounts:
-            - mountPath: /var/lib/postgresql/data
-              name: elections-db
-        env:
-        - name: "POSTGRES_DB"
-          valueFrom:
-            secretKeyRef:
-              name: "creds-elections"
-              key: "PGDATABASE"
-        - name: "POSTGRES_USER"
-          valueFrom:
-            secretKeyRef:
-              name: "creds-elections"
-              key: "PGUSER"
-        - name: "POSTGRES_PASSWORD"
-          valueFrom:
-            secretKeyRef:
-              name: "creds-elections"
-              key: "PGPASSWORD"
-        ports:
-        - containerPort: 5432
-          name: elections-db
-      volumes:
         - name: elections-db
+          image: postgres:11
+          env:
+          - name: "POSTGRES_DB"
+            valueFrom:
+              secretKeyRef:
+                name: "creds-elections"
+                key: "PGDATABASE"
+          - name: "POSTGRES_USER"
+            valueFrom:
+              secretKeyRef:
+                name: "creds-elections"
+                key: "PGUSER"
+          - name: "POSTGRES_PASSWORD"
+            valueFrom:
+              secretKeyRef:
+                name: "creds-elections"
+                key: "PGPASSWORD"
+          ports:
+          - containerPort: 5432
+            name: elections-db
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: postgredb
+      volumes:
+        - name: postgredb
           persistentVolumeClaim:
             claimName: elections-claim
 ---
