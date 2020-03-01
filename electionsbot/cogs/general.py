@@ -6,7 +6,7 @@ from git import Repo
 
 
 path = os.path.dirname(os.path.abspath(__file__))
-path = "/".join(path.split("/")[:-2])
+path = "\\".join(path.split("\\")[:-2])
 
 repo = Repo(path)
 latest = repo.commit()
@@ -74,7 +74,7 @@ class General(Cog):
 
         extra_context = {
             "discord_info": {
-                "Channel": ctx.channel.mention,
+                "Channel": str(ctx.channel),
                 "User": ctx.author.mention,
                 "Command": ctx.message.content,
             }
