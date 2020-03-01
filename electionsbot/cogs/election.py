@@ -85,7 +85,7 @@ class ElectionCog(commands.Cog):
             database=PostgreSQL.PGDATABASE,
         )
         await connection.execute(
-            "CREATE TABLE IF NOT EXISTS votes (voter_id bigint PRIMARY KEY, vote_1 bigint, vote_2 bigint)"
+            "CREATE TABLE IF NOT EXISTS votes (voter_id bigint PRIMARY KEY, vote_1 bigint, vote_2 bigint, datetime timestamp)"
         )
         return connection
 
