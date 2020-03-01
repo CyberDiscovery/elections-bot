@@ -21,7 +21,7 @@ spec:
   template:
     metadata:
       labels:
-        app: postgres
+        app: elections-db
     spec:
       containers:
         - name: elections-db
