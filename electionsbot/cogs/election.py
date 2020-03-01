@@ -8,7 +8,8 @@ import random
 import urllib.request
 import re
 import time
-from electionsbot.constants import EMOJI_SERVER_ID
+import asyncpg
+from electionsbot.constants import EMOJI_SERVER_ID, PostgreSQL
 
 
 class ElectionCog(commands.Cog):
@@ -74,6 +75,15 @@ class ElectionCog(commands.Cog):
         print(candidates)
         random.shuffle(candidates)  # Randomise the order each time for neutrality.
         return candidates
+
+    def connectPostgres(self):
+        return asyncpg.connect(
+            host=PostgreSQL.PGHOST,
+            port=PostgreSQL.PGPORT,
+            user=PostgreSQL.PGUSER,
+            password=PostgreSQL.PGPASSWORD,
+            database=PostgreSQL.PGDATABASE,
+        )
 
     @commands.command()
     async def candidateInfo(self, ctx, candidate: User):
