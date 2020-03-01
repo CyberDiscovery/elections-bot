@@ -1,6 +1,6 @@
 import random
 import re
-import urllib.request
+import urllib.request, urllib.error
 from asyncio import sleep
 from datetime import datetime
 from json import load
@@ -126,7 +126,13 @@ class ElectionCog(commands.Cog):
             """
         ))
 
-    #@commands.has_role(ROOT_ROLE_ID)
+    @commands.has_role(ROOT_ROLE_ID)
+    @commands.command()
+    async def allCandidateDetails(self, ctx):
+        for candidate in self.getAllCandidates():
+            await ctx.send(embed=candidate.getEmbed())
+
+    @commands.has_role(ROOT_ROLE_ID)
     @commands.command()
     async def viewTotals(self, ctx):
         votes = await (await connectPostgres()).fetch(
@@ -146,7 +152,7 @@ class ElectionCog(commands.Cog):
 
     # @commands.has_role(ROOT_ROLE_ID)
     @commands.command()
-    async def viewVote(self,ctx):
+    async def viewMyVote(self,ctx):
         if not isinstance(ctx.channel, discord.DMChannel):
             return await ctx.channel.send("You can only use this command in DMs.")
         votes = await (await connectPostgres()).fetch(
@@ -275,7 +281,6 @@ class ElectionCog(commands.Cog):
 
             await sleep(5)
             await m.add_reaction("✅")
-            await m.add_reaction("⬜")
             await m.add_reaction("🚫")
 
     @commands.command()
@@ -436,9 +441,10 @@ class Candidate:
 
     def getEmbed(self):
         output = Embed()
+        output.colour = 0x00daff
         output.set_author(name=self.username, icon_url=self.avatar)
         output.description = self.campaign
-        output.set_footer(text="To vote for this candidate, do XYZ.")
+        output.set_footer(text=f"")
         return output
 
 
