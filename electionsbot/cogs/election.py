@@ -8,7 +8,9 @@ import random
 import urllib.request
 import re
 import time
-from electionsbot.constants import EMOJI_SERVER_ID
+import asyncpg
+from datetime import now
+from electionsbot.constants import EMOJI_SERVER_ID, PostgreSQL
 
 
 class ElectionCog(commands.Cog):
@@ -83,6 +85,19 @@ class ElectionCog(commands.Cog):
         print(candidates)
         random.shuffle(candidates)  # Randomise the order each time for neutrality.
         return candidates
+
+    async def connectPostgres(self):
+        connection = await asyncpg.connect(
+            host=PostgreSQL.PGHOST,
+            port=PostgreSQL.PGPORT,
+            user=PostgreSQL.PGUSER,
+            password=PostgreSQL.PGPASSWORD,
+            database=PostgreSQL.PGDATABASE,
+        )
+        await connection.execute(
+            "CREATE TABLE IF NOT EXISTS votes (voter_id bigint PRIMARY KEY, vote_1 bigint, vote_2 bigint, datetime timestamp)"
+        )
+        return connection
 
     @commands.command()
     async def candidateInfo(self, ctx, candidate: User):
@@ -316,10 +331,14 @@ class VoteSession:
         self.state = "LOCK"
 
     def commit(self):
-        # TODO: Database Logic
-        # Here, the votes chosen within this session should be committed to the database.
-        # Useful: self.user gives the voting user; self.choices should give an array of Candidates chosen.
-        pass
+        self.connectPostgres().execute(
+            "INSERT INTO votes(voter_id, vote_1, vote_2, datetime) VALUES($1, $2, $3, $4) ON CONFLICT DO NOTHING;",
+            self.user,
+            self.choices[0].username,
+            self.choices[1].username,
+            now().timestamp()
+        )
+
 
 def setup(bot: commands.Bot):
     bot.add_cog(ElectionCog(bot))
