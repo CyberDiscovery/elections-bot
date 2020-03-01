@@ -186,13 +186,13 @@ class ElectionCog(commands.Cog):
             return await ctx.send(
                 "This account was created after the cutoff, and is therefore not eligible to vote."
             )
-        member = self.bot.get_guild(VOTE_SERVER_ID).get_member(ctx.author.id)
-        if member and self.bot.get_role(LEVEL_ROLE_ID) > member.top_role and not \
-                (self.bot.get_role(DTB_ROLE_ID) in member.roles or \
-                self.bot.get_role(MUTED_ROLE_ID) == member.top_role):
+        guild = self.bot.get_guild(VOTE_SERVER_ID)
+        member = guild.get_member(ctx.author.id)
+        if member and (guild.get_role(LEVEL_ROLE_ID) > member.top_role or guild.get_role(DTB_ROLE_ID) in member.roles) \
+                and not guild.get_role(MUTED_ROLE_ID) == member.top_role:
             return await ctx.send(
-                "In order to be eligible to vote, you must have reached at least Mee6 Level 5, and not have any outstanding"
-                " mutes."
+                "In order to be eligible to vote, you must have reached at least Mee6 Level 5, "
+                "and not currently be muted."
             )
         if (
             len(
