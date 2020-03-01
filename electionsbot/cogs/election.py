@@ -123,6 +123,19 @@ class ElectionCog(commands.Cog):
             {chr(10).join(names)}"""
         ))
 
+    # @commands.has_role(ROOT_ROLE_ID)
+    @commands.command()
+    async def viewVote(self,ctx):
+        vote = await (await connectPostgres()).fetch(
+            "SELECT voter_id, vote_1, vote_2, datetime FROM votes WHERE voter_id=$1", ctx.author.id
+        )
+        if (len(vote) > 0):
+            vote = vote[0]
+            votenumbers = []
+            return await ctx.send("You voted for ")
+        else:
+            return await ctx.send("You haven't voted yet!")
+
     @commands.command()
     async def vote(self, ctx):
         if not self.ready:
