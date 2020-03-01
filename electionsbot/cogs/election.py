@@ -1,6 +1,7 @@
 import random
 import re
-import urllib.request, urllib.error
+import urllib.request
+import urllib.error
 from asyncio import sleep
 from datetime import datetime
 from json import load
