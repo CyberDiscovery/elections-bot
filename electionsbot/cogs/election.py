@@ -41,6 +41,7 @@ class ElectionCog(commands.Cog):
         self.ready = False
         self.START_TIME = datetime.utcfromtimestamp(data["starttime"])
         self.END_TIME = datetime.utcfromtimestamp(data["endtime"])
+        self.CREATION_CUTOFF = datetime.utcfromtimestamp(data["creationcutoff"])
         # This will be automatically disabled if the number of candidates reaches 20.
         self.REACTION_INTERFACE = False
 
@@ -125,16 +126,39 @@ class ElectionCog(commands.Cog):
             """
         ))
 
+    #@commands.has_role(ROOT_ROLE_ID)
+    @commands.command()
+    async def viewTotals(self, ctx):
+        votes = await (await connectPostgres()).fetch(
+    """select candidate, count(*) from (
+        select vote_1 as candidate from votes
+        union all select vote_2 from votes
+    ) t1 group by candidate order by count"""
+        )
+        pairs = {}
+        out = ""
+        for candidateid, count in votes:
+            candidate = self.getCandidate(candidateid)
+            out += f"{str(candidate.emoji)} {candidate.username}[{candidate.id}]: {count}\n"
+        await ctx.send(dedent(
+            f"The following is each member, followed by their number of votes.\n" + out
+        ))
+
     # @commands.has_role(ROOT_ROLE_ID)
     @commands.command()
     async def viewVote(self,ctx):
-        vote = await (await connectPostgres()).fetch(
+        if not isinstance(ctx.channel, discord.DMChannel):
+            return await ctx.channel.send("You can only use this command in DMs.")
+        votes = await (await connectPostgres()).fetch(
             "SELECT voter_id, vote_1, vote_2, datetime FROM votes WHERE voter_id=$1", ctx.author.id
         )
-        if (len(vote) > 0):
-            vote = vote[0]
-            votenumbers = []
-            return await ctx.send("You voted for ")
+        if len(votes) > 0:
+            vote = votes[0]
+            chosen = [vote[1],vote[2]]
+            candidates = [c for c in self.getAllCandidates() if int(c.id) in chosen]
+            names = [
+                str(candidate.emoji) + " " + candidate.username for candidate in candidates]
+            return await ctx.send("You voted for: \n"+chr(10).join(names))
         else:
             return await ctx.send("You haven't voted yet!")
 
@@ -146,6 +170,8 @@ class ElectionCog(commands.Cog):
             return await ctx.send("You can only use this command in DMs.")
         if self.START_TIME > datetime.utcnow() or self.END_TIME < datetime.utcnow():
             return await ctx.send("Voting is currently closed.")
+        if self.CREATION_CUTOFF < ctx.author.created_at:
+            return await ctx.send("This account was created after the cutoff, and is therefore not eligible to vote.")
         if (
             len(
                 await (await connectPostgres()).fetch(
