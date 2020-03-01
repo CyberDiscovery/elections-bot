@@ -123,6 +123,8 @@ class ElectionCog(commands.Cog):
         if not isinstance(ctx.channel,discord.DMChannel):
             return await ctx.send(
                 "You can only use this command in DMs.")
+        if self.connectPostgres().fetch("SELECT voter_id FROM votes WHERE voter_id=$1", self.user.id) is not None:
+            return await ctx.send("You have already voted!")
         currentSession = self.voteSessions.get(ctx.author.id)
         if currentSession and not currentSession.hasTimedOut():
             return await ctx.send("You already have an active voting session! Please use that, or wait for it to expire.")
@@ -333,7 +335,7 @@ class VoteSession:
     def commit(self):
         self.connectPostgres().execute(
             "INSERT INTO votes(voter_id, vote_1, vote_2, datetime) VALUES($1, $2, $3, $4) ON CONFLICT DO NOTHING;",
-            self.user,
+            self.user.id,
             self.choices[0].username,
             self.choices[1].username,
             now().timestamp()
