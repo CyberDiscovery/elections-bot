@@ -241,7 +241,7 @@ class VoteSession:
 
     def commit(self):
         self.connectPostgres().execute(
-            "INSERT INTO votes(user_id, vote_1, vote_2, datetime) VALUES($1, $2, $3, $4) ON CONFLICT DO NOTHING;",
+            "INSERT INTO votes(voter_id, vote_1, vote_2, datetime) VALUES($1, $2, $3, $4) ON CONFLICT DO NOTHING;",
             self.user,
             self.choices[0].username,
             self.choices[1].username,
