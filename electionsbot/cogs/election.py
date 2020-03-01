@@ -81,7 +81,7 @@ class ElectionCog(commands.Cog):
             candidate.campaign = info.get("campaign")
             self.candidates[int(id)] = candidate
         print(self.candidates)
-        if len(self.candidates) > 20:
+        if len(self.candidates) >= 20:
             self.REACTION_INTERFACE = False
         self.ready = True
 
