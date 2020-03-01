@@ -258,6 +258,9 @@ class ElectionCog(commands.Cog):
 
     @commands.command()
     async def choose(self, ctx, candidate: discord.User):
+        if not isinstance(ctx.channel, discord.DMChannel):
+            await ctx.message.delete()
+            return await ctx.send("You can only use this command in DMs.")
         info = self.candidates.get(int(candidate.id))
         voteSession = self.voteSessions.get(ctx.author.id)
         if not voteSession:
@@ -288,6 +291,9 @@ class ElectionCog(commands.Cog):
 
     @commands.command()
     async def unchoose(self, ctx, candidate: discord.User):
+        if not isinstance(ctx.channel, discord.DMChannel):
+            await ctx.message.delete()
+            return await ctx.send("You can only use this command in DMs.")
         info = self.candidates.get(int(candidate.id))
         voteSession = self.voteSessions.get(ctx.author.id)
         if not voteSession:
@@ -317,8 +323,8 @@ class ElectionCog(commands.Cog):
     @commands.has_role(ROOT_ROLE_ID)
     @commands.command()
     async def clearvote(self, ctx, voter: User):
-        self.connectPostgres().execute("DELETE FROM votes WHERE voter_id=$1", User.id)
-        await ctx.send(f"<@{User.id}>'s votes have been cleared")
+        await (await connectPostgres()).execute("DELETE FROM votes WHERE voter_id=$1", voter.id)
+        await ctx.send(f"{voter.mention}'s votes have been cleared")
         return await voter.send(
             f"Your votes were cleared by <@{ctx.author.id}> - you can now place a new set."
         )
