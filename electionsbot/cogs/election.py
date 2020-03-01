@@ -290,7 +290,7 @@ class ElectionCog(commands.Cog):
             await ctx.send(embed=info.getEmbed())
 
     @commands.command()
-    async def choose(self, ctx, *, candidate: discord.User):
+    async def choose(self, ctx, *, candidate: User):
         if not isinstance(ctx.channel, discord.DMChannel):
             await ctx.message.delete()
             return await ctx.send(
@@ -317,7 +317,7 @@ class ElectionCog(commands.Cog):
             await ctx.send(f"Added {info.username} as a choice.")
 
     @commands.command()
-    async def unchoose(self, ctx, *, candidate: discord.User):
+    async def unchoose(self, ctx, *, candidate: User):
         if not isinstance(ctx.channel, discord.DMChannel):
             await ctx.message.delete()
             return await ctx.send(
