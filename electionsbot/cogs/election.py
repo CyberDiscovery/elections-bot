@@ -142,7 +142,6 @@ class ElectionCog(commands.Cog):
         union all select vote_2 from votes
     ) t1 group by candidate order by count"""
         )
-        pairs = {}
         out = ""
         for candidateid, count in votes:
             candidate = self.getCandidate(candidateid)
