@@ -31,7 +31,7 @@ async def connectPostgres():
 class ElectionCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        data = load(open("testdata.json", "r", encoding="UTF-8"))
+        data = load(open("electionsbot/testdata.json", "r", encoding="UTF-8"))
         self.candidateData = data["candidates"]
         self.candidates = {}
         self.voteSessions = {}
