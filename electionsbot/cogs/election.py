@@ -115,7 +115,7 @@ class ElectionCog(commands.Cog):
         random.shuffle(candidates)  # Randomise the order each time for neutrality.
         return candidates
 
-    @commands.command()
+    @commands.command(aliases=["list"])
     async def candidateList(self, ctx):
         names = [
             str(candidate.emoji) + " " + candidate.username
@@ -127,13 +127,13 @@ class ElectionCog(commands.Cog):
         )
 
     @commands.has_role(ROOT_ROLE_ID)
-    @commands.command()
+    @commands.command(aliases=["listAll"])
     async def allCandidateDetails(self, ctx):
         for candidate in self.getAllCandidates():
             await ctx.send(embed=candidate.getEmbed())
 
     @commands.has_role(ROOT_ROLE_ID)
-    @commands.command()
+    @commands.command(aliases=["electiontotals"])
     async def viewTotals(self, ctx):
         votes = await (await connectPostgres()).fetch(
             """select candidate, count(*) from (
@@ -151,7 +151,7 @@ class ElectionCog(commands.Cog):
         )
 
     # @commands.has_role(ROOT_ROLE_ID)
-    @commands.command()
+    @commands.command(aliases=["myvote"])
     async def viewMyVote(self, ctx):
         if not isinstance(ctx.channel, discord.DMChannel):
             return await ctx.channel.send("You can only use this command in DMs.")
@@ -171,7 +171,7 @@ class ElectionCog(commands.Cog):
         else:
             return await ctx.send("You haven't voted yet!")
 
-    @commands.command()
+    @commands.command(aliases=["start"])
     async def vote(self, ctx):
         if not self.ready:
             return await ctx.send("I'm just getting ready, hold on!")
@@ -231,7 +231,7 @@ class ElectionCog(commands.Cog):
                 "*This session will expire in 5 minutes.*"
             )
 
-    @commands.command()
+    @commands.command(aliases=["lock","submit"])
     async def confirm(self, ctx):
         await self.confirm_callback(ctx.channel, ctx.author)
 
@@ -276,7 +276,7 @@ class ElectionCog(commands.Cog):
             await m.add_reaction("✅")
             await m.add_reaction("🚫")
 
-    @commands.command()
+    @commands.command(aliases=["info","candidate"])
     async def candidateInfo(self, ctx, *, candidate: User):
         info = self.candidates.get(int(candidate.id))
         print(info)
@@ -289,7 +289,7 @@ class ElectionCog(commands.Cog):
         else:
             await ctx.send(embed=info.getEmbed())
 
-    @commands.command()
+    @commands.command(aliases=["pick","select"])
     async def choose(self, ctx, *, candidate: User):
         if not isinstance(ctx.channel, discord.DMChannel):
             await ctx.message.delete()
@@ -316,7 +316,7 @@ class ElectionCog(commands.Cog):
             voteSession.addChoice(info)
             await ctx.send(f"Added {info.username} as a choice.")
 
-    @commands.command()
+    @commands.command(aliases=["unpick","deselect"])
     async def unchoose(self, ctx, *, candidate: User):
         if not isinstance(ctx.channel, discord.DMChannel):
             await ctx.message.delete()
