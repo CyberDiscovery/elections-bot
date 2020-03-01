@@ -44,7 +44,6 @@ class ElectionCog(commands.Cog):
                         break
                 else:
                     candidate.emoji = await self.backendGuild.create_custom_emoji(name=emojiname,image=emojiimage)
-                print("Done!")
             else:
                 candidate.username = info.get("username")
                 candidate.avatar = info.get("avatar")
@@ -56,7 +55,6 @@ class ElectionCog(commands.Cog):
                         break
                 else:
                     candidate.emoji = await self.backendGuild.create_custom_emoji(name=emojiname, image=emojiimage)
-                print("Done!")
             candidate.campaign = info.get("campaign")
             self.candidates[int(id)] = candidate
         print(self.candidates)
@@ -125,12 +123,13 @@ class ElectionCog(commands.Cog):
         if reaction.emoji == "✅" and not voteSession.hasTimedOut() and voteSession.state == "PICK":
             reactions = reaction.message.reactions
             print(reactions)
-            chosenCandidates = []
+            chosenCandidates = voteSession.choices
             for reaction in reactions:
                 if user in await reaction.users().flatten():
                     x = self.getCandidateFromEmoji(reaction.emoji)
                     if x:
                         voteSession.addChoice(x)
+            chosenCandidates = voteSession.choices
             if len(chosenCandidates) > self.CHOICE_MAXIMUM:
                 voteSession.clearChoice()
                 return await user.send(f"You've selected too many candidates. You can only select a maximum of {self.CHOICE_MAXIMUM} candidates.\n"
@@ -203,7 +202,8 @@ class VoteSession:
         return self.exp < time.time()
 
     def addChoice(self, choice):
-        if len(self.choices) >= self.MAX_CHOICES or self.state == "LOCK" or choice in self.choices:
+        #len(self.choices) >= self.MAX_CHOICES or
+        if self.state == "LOCK" or choice in self.choices:
             return False
         self.choices.append(choice)
         return True
