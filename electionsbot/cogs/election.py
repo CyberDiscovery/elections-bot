@@ -233,6 +233,12 @@ class ElectionCog(commands.Cog):
             voteSession.removeChoice(info)
             await ctx.send(f"Removed {info.username} as a choice.")
 
+    @commands.command()
+    async def clearvote(self, ctx, voter: User):
+        self.connectPostgres().execute("DELETE FROM votes WHERE voter_id=$1", User.id)
+        await ctx.send(f"<@{User.id}>'s votes have been cleared")
+        return await self.bot.send_message(User, f"Your votes were cleared by <@{ctx.author.id}>")
+
 
     # Reaction Interface - Suited for under 20 Members
     @commands.Cog.listener()
