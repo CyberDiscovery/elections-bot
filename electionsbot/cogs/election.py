@@ -222,7 +222,7 @@ class ElectionCog(commands.Cog):
                 "message.\n\n"
                 "**Remember, you can only vote for exactly two candidates, and"
                 "you can't change your mind once you confirm!**\n\n"
-                "As a reminder, in a random order, the candidates currently standing are:"
+                "As a reminder, in a random order, the candidates currently standing are:\n"
                 f"**{chr(10).join(names)}**\n\n"
                 "*This session will expire in 5 minutes.*"
             )
