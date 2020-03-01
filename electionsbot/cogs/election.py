@@ -70,7 +70,7 @@ class ElectionCog(commands.Cog):
                 try:
                     emojiimage = urllib.request.urlopen(url=candidate.avatar)
                 except:
-                    emojiimage = urllib.request.urlopen(url="https://discordapp.com/assets/3e531d8e171629e9433db0bb431b2e12.svg")
+                    emojiimage = urllib.request.urlopen(url="https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/twitter/236/black-question-mark-ornament_2753.png")
                 emojiname = re.sub(r'\W+', '', candidate.username.replace(" ", "_"))
                 for x in emoji:
                     if x.name == emojiname:
@@ -88,6 +88,12 @@ class ElectionCog(commands.Cog):
     def getCandidate(self, candidateID):
         return self.candidates.get(candidateID)
 
+    def getCandidateFromName(self, candidateName):
+        for c in self.candidates.values():
+            if c.username == candidateName:
+                return c
+        return None
+
     def getCandidateFromEmoji(self, emoji):
         for c in self.candidates.values():
             if c.emoji == emoji:
@@ -101,7 +107,7 @@ class ElectionCog(commands.Cog):
         return candidates
 
     @commands.command()
-    async def candidateInfo(self, ctx, candidate: User):
+    async def candidateInfo(self, ctx, candidate: discord.User):
         info = self.candidates.get(int(candidate.id))
         print(info)
         if not info:
@@ -124,7 +130,8 @@ class ElectionCog(commands.Cog):
         if not isinstance(ctx.channel,discord.DMChannel):
             return await ctx.send(
                 "You can only use this command in DMs.")
-        if await (await connectPostgres()).fetch("SELECT voter_id FROM votes WHERE voter_id=$1", ctx.author.id) is not None:
+        print(await (await connectPostgres()).fetch("SELECT voter_id FROM votes WHERE voter_id=$1", ctx.author.id))
+        if len(await (await connectPostgres()).fetch("SELECT voter_id FROM votes WHERE voter_id=$1", ctx.author.id)) > 0:
             return await ctx.send("You have already voted!")
         currentSession = self.voteSessions.get(ctx.author.id)
         if currentSession and not currentSession.hasTimedOut():
@@ -204,11 +211,12 @@ class ElectionCog(commands.Cog):
             await ctx.send(embed=info.getEmbed())
 
     @commands.command()
-    async def choose(self, ctx, candidate: User):
+    async def choose(self, ctx, candidate: discord.User):
         info = self.candidates.get(int(candidate.id))
         voteSession = self.voteSessions.get(ctx.author.id)
         if not voteSession:
-            return await ctx.send(f"You must have an active votesession to make a choice.")
+            return await ctx.send(f"You must have an active votesession to make a choice. Use the vote command to start"
+                                  f" a votesession.")
         if voteSession.state != "PICK":
             return await ctx.send(f"You cannot modify your choices if you are confirming them.")
         if not info:
@@ -219,11 +227,12 @@ class ElectionCog(commands.Cog):
             await ctx.send(f"Added {info.username} as a choice.")
 
     @commands.command()
-    async def unchoose(self, ctx, candidate: User):
+    async def unchoose(self, ctx, candidate : discord.User):
         info = self.candidates.get(int(candidate.id))
         voteSession = self.voteSessions.get(ctx.author.id)
         if not voteSession:
-            return await ctx.send(f"You must have an active votesession to make a choice.")
+            return await ctx.send(f"You must have an active votesession to make a choice. Use the vote command to start"
+                                  f" a votesession.")
         if voteSession.state != "PICK":
             return await ctx.send(f"You cannot modify your choices if you are confirming them.")
         if not info:
