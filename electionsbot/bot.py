@@ -9,7 +9,7 @@ from electionsbot.log import DiscordHandler
 
 logger = logging.getLogger(__name__)
 
-bot = Bot(command_prefix=when_mentioned_or("...", ":"), help_command=None)
+bot = Bot(command_prefix=when_mentioned_or("...", ":"), help_command=None, case_insensitive=True)
 
 logger.addHandler(DiscordHandler(bot))
 logger.setLevel(logging.INFO)

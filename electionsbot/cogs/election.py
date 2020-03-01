@@ -30,7 +30,7 @@ async def connectPostgres():
 class ElectionCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        data = load(open("applications.json", "r",encoding="UTF-8"))
+        data = load(open("applications.json", "r", encoding="UTF-8"))
         self.candidateData = data["candidates"]
         self.candidates = {}
         self.voteSessions = {}
@@ -126,7 +126,7 @@ class ElectionCog(commands.Cog):
             f"{chr(10).join(names)}"
         )
 
-    @commands.has_role(ROOT_ROLE_ID)
+    @commands.check_any(commands.has_role(ROOT_ROLE_ID),commands.dm_only())
     @commands.command(aliases=["listAll"])
     async def allCandidateDetails(self, ctx):
         for candidate in self.getAllCandidates():
@@ -219,7 +219,7 @@ class ElectionCog(commands.Cog):
                 for candidate in self.getAllCandidates()
             ]
             message = await ctx.send(
-                "Run the `choose <candidate>` command, specifying the Discord Name of the user you wish to "
+                "Run the `:choose <candidate>` command, specifying the Discord Name of the user you wish to "
                 "vote for; and repeat this for each choice you wish to make.\n"
                 "If you want to cancel a choice, use `unchoose <candidate>`. Once you're "
                 'done, run the `confirm` command to confirm. If you need more time to decide, just ignore this "'
