@@ -188,8 +188,8 @@ class ElectionCog(commands.Cog):
             )
         guild = self.bot.get_guild(VOTE_SERVER_ID)
         member = guild.get_member(ctx.author.id)
-        if member and (guild.get_role(LEVEL_ROLE_ID) > member.top_role or guild.get_role(DTB_ROLE_ID) in member.roles) \
-                and not guild.get_role(MUTED_ROLE_ID) == member.top_role:
+        if not (member and (guild.get_role(LEVEL_ROLE_ID) > member.top_role or guild.get_role(DTB_ROLE_ID) in
+                            member.roles) and not guild.get_role(MUTED_ROLE_ID) == member.top_role):
             return await ctx.send(
                 "In order to be eligible to vote, you must have reached at least Mee6 Level 5, "
                 "and not currently be muted."
@@ -230,11 +230,12 @@ class ElectionCog(commands.Cog):
             message = await ctx.send(
                 "Run the `:choose <candidate>` command, specifying the Discord Name of the user you wish to "
                 "vote for; and repeat this for each choice you wish to make.\n"
-                "If you want to cancel a choice, use `unchoose <candidate>`. Once you're "
-                "done, run the `confirm` command to confirm. If you need more time to decide, just ignore this "
-                "message.\n\n"
+                "If you want to cancel a choice, use `unchoose <candidate>`. \nOnce you're "
+                "done, run the `confirm` command to confirm. To view a candidate's statement, use "
+                "`candidate <candidate>`, or `listall` if you want them all at once."
+                " If you need more time to decide, just ignore this message.\n\n"
                 "**Remember, you can only vote for exactly two candidates, and"
-                "you can't change your mind once you confirm!**\n\n"
+                " you can't change your mind once you confirm!**\n\n"
                 "As a reminder, in a random order, the candidates currently standing are:\n"
                 f"**{chr(10).join(names)}**\n\n"
                 "*This session will expire in 5 minutes.*"
