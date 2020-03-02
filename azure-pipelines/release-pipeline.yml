@@ -25,7 +25,7 @@ stages:
           displayName: 'Publish to GitHub Packages'
           inputs:
             containerRegistry: 'GitHub Packages'
-            repository: 'CyberDiscovery/cyberdisc-bot/elections-bot'
+            repository: 'CyberDiscovery/elections-bot/elections-bot'
             tags: latest
   
   - stage: Deploy
