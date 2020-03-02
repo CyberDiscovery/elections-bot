@@ -138,10 +138,10 @@ class ElectionCog(commands.Cog):
     @commands.command(aliases=["electiontotals"])
     async def viewTotals(self, ctx):
         votes = await (await connectPostgres()).fetch(
-            """select candidate, count(*) from (
+            """select candidate, count(*) as votecount from (
         select vote_1 as candidate from votes
         union all select vote_2 from votes
-    ) t1 group by candidate order by count"""
+    ) t1 group by candidate order by votecount DESC"""
         )
         out = ""
         for candidateid, count in votes:
