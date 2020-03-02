@@ -57,7 +57,7 @@ class ElectionCog(commands.Cog):
             if user:
                 candidate.discorduser = user
                 candidate.username = user.name + "#" + user.discriminator
-                candidate.avatar = user.avatar_url_as(format='png',size=32)
+                candidate.avatar = user.avatar_url_as(format='png', size=32)
                 emojiimage = await candidate.avatar.read()
                 emojiname = re.sub(r"\W+", "", (user.name[:28] + user.discriminator).replace(" ", "_"))
                 for x in emoji:
@@ -414,7 +414,7 @@ class ElectionCog(commands.Cog):
             await self.backendGuild.fetch_emojis()
             candidate.discorduser = after
             candidate.username = user.name + "#" + user.discriminator
-            candidate.avatar = user.avatar_url.avatar_url_as(format='png',size=32)
+            candidate.avatar = user.avatar_url.avatar_url_as(format='png', size=32)
             emojiimage = await candidate.avatar.read()
             emojiname = re.sub(r"\W+", "", candidate.username.replace(" ", "_"))
             await candidate.emoji.delete()
