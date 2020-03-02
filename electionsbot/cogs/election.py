@@ -135,6 +135,11 @@ class ElectionCog(commands.Cog):
             await ctx.send(embed=candidate.getEmbed())
 
     @commands.has_role(ROOT_ROLE_ID)
+    @commands.command(aliases=["voters"])
+    async def voterCount(self, ctx):
+        return await ctx.send(f"{await connectPostgres().fetchval('SELECT COUNT(*) FROM votes')} votes recorded!")
+
+    @commands.has_role(ROOT_ROLE_ID)
     @commands.command(aliases=["electiontotals"])
     async def viewTotals(self, ctx):
         votes = await (await connectPostgres()).fetch(
