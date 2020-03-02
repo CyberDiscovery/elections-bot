@@ -188,7 +188,9 @@ class ElectionCog(commands.Cog):
             )
         guild = self.bot.get_guild(VOTE_SERVER_ID)
         member = guild.get_member(ctx.author.id)
-        if not (member and (guild.get_role(LEVEL_ROLE_ID) > member.top_role or guild.get_role(DTB_ROLE_ID) in
+        # If the member exists on the server, the user has a role equal to or greater than the level 5 role in list
+        # OR has Death To Bots; and Muted isn't the greatest role, continue, else return a message and abort vote.
+        if not (member and (guild.get_role(LEVEL_ROLE_ID) <= member.top_role or guild.get_role(DTB_ROLE_ID) in
                             member.roles) and not guild.get_role(MUTED_ROLE_ID) == member.top_role):
             return await ctx.send(
                 "In order to be eligible to vote, you must have reached at least Mee6 Level 5, "
