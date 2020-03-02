@@ -56,6 +56,24 @@ stages:
             namespace: 'default'
             command: 'set'
             arguments: 'image deployment electionsbot electionsbot=cyberdiscovery/electionsbot:latest'
+        
+        - task: Kubernetes@1
+          displayName: 'Scale Down Bot Container'
+          inputs:
+            connectionType: 'Kubernetes Service Connection'
+            kubernetesServiceEndpoint: 'Google Kubernetes Engine'
+            namespace: 'default'
+            command: 'scale'
+            arguments: 'deployment electionsbot --replicas=0'
+
+        - task: Kubernetes@1
+          displayName: 'Scale Up Bot Container'
+          inputs:
+            connectionType: 'Kubernetes Service Connection'
+            kubernetesServiceEndpoint: 'Google Kubernetes Engine'
+            namespace: 'default'
+            command: 'scale'
+            arguments: 'deployment electionsbot --replicas=1'
 
         - task: Kubernetes@1
           displayName: 'Rolling Update Postgres Container'
@@ -65,3 +83,21 @@ stages:
             namespace: 'default'
             command: 'set'
             arguments: 'image deployment elections-db elections-db=postgres:11'
+        
+        - task: Kubernetes@1
+          displayName: 'Scale Down DB Container'
+          inputs:
+            connectionType: 'Kubernetes Service Connection'
+            kubernetesServiceEndpoint: 'Google Kubernetes Engine'
+            namespace: 'default'
+            command: 'scale'
+            arguments: 'deployment elections-db --replicas=0'
+
+        - task: Kubernetes@1
+          displayName: 'Scale Up DB Container'
+          inputs:
+            connectionType: 'Kubernetes Service Connection'
+            kubernetesServiceEndpoint: 'Google Kubernetes Engine'
+            namespace: 'default'
+            command: 'scale'
+            arguments: 'deployment elections-db --replicas=1'
