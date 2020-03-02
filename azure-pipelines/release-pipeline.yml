@@ -21,12 +21,12 @@ stages:
             Dockerfile: '$(System.DefaultWorkingDirectory)/Dockerfile'
             tags: latest
 
-        - task: Docker@2
-          displayName: 'Publish to GitHub Packages'
-          inputs:
-            containerRegistry: 'GitHub Packages'
-            repository: 'CyberDiscovery/elections-bot/elections-bot'
-            tags: latest
+#        - task: Docker@2
+#          displayName: 'Publish to GitHub Packages'
+#          inputs:
+#            containerRegistry: 'GitHub Packages'
+#            repository: 'CyberDiscovery/elections-bot/elections-bot'
+#            tags: latest
   
   - stage: Deploy
     jobs:
