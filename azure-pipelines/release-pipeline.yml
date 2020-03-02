@@ -54,8 +54,8 @@ stages:
             connectionType: 'Kubernetes Service Connection'
             kubernetesServiceEndpoint: 'Google Kubernetes Engine'
             namespace: 'default'
-            command: 'rolling-update'
-            arguments: 'electionsbot --image=cyberdiscovery/electionsbot:latest'
+            command: 'set'
+            arguments: 'image deployment elections-bot elections-bot=cyberdiscovery/elections-bot:latest'
 
         - task: Kubernetes@1
           displayName: 'Rolling Update Postgres Container'
@@ -63,5 +63,5 @@ stages:
             connectionType: 'Kubernetes Service Connection'
             kubernetesServiceEndpoint: 'Google Kubernetes Engine'
             namespace: 'default'
-            command: 'rolling-update'
-            arguments: 'electionsbot --image=postgres:latest'
+            command: 'set'
+            arguments: 'image deployment elections-bot postgres=postgres:11'
