@@ -2,7 +2,7 @@ import base64
 from os import environ
 
 
-DEPLOY = bool(environ.get('DEPLOY'))
+DEPLOY = bool(environ.get("DEPLOY"))
 
 
 def getenv(name: str, fallback: str = "") -> str:
@@ -24,5 +24,14 @@ class PostgreSQL:
 BOT_TOKEN = getenv("BOT_TOKEN")
 ROOT_ROLE_ID = int(environ.get("ROOT_MEMBERS_ID", "450113490590629888"))
 SUDO_ROLE_ID = int(environ.get("SUDO_MEMBERS_ID", "450113682542952451"))
-LOGGING_CHANNEL_ID = int(environ.get("LOGGING_CHANNEL_ID", "538494690601992212"))
-CYBERDISC_ICON_URL = "https://pbs.twimg.com/profile_images/921313066515615745/fLEl2Gfa_400x400.jpg"
+LOGGING_CHANNEL_ID = int(environ.get("LOGGING_CHANNEL_ID", "683722827718852656"))
+CYBERDISC_ICON_URL = (
+    "https://pbs.twimg.com/profile_images/921313066515615745/fLEl2Gfa_400x400.jpg"
+)
+
+EMOJI_SERVER_ID = int(environ.get("EMOJI_SERVER_ID", "683722025608675527"))
+VOTE_SERVER_ID = int(environ.get("VOTE_SERVER_ID", "409851296116375565"))
+
+LEVEL_ROLE_ID = int(environ.get("LEVEL_ROLE_ID", "450407751387054081"))
+DTB_ROLE_ID = int(environ.get("DTB_ROLE_ID", "464048499219103745"))
+MUTED_ROLE_ID = int(environ.get("MUTED_ROLE_ID", "450402574047248384"))

@@ -1,90 +1,72 @@
 apiVersion: "v1"
 kind: "Service"
 metadata:
-  name: "postgres-elections"
+  name: "elections-db"
   labels:
-    app: "postgres-elections"
+    app: "elections-db"
 spec:
   ports:
   - port: 5432
-    name: "postgres-elections"
+    name: "elections-db"
   clusterIP: "None"
   selector:
-    app: "postgres-elections"
+    app: "elections-db"
 ---
-kind: PersistentVolume
 apiVersion: v1
-metadata:
-  name: postgres-pv-volume
-  labels:
-    type: local
-    app: postgres
-spec:
-  storageClassName: manual
-  capacity:
-    storage: 5Gi
-  accessModes:
-    - ReadWriteMany
-  hostPath:
-    path: "/mnt/data"
----
 kind: PersistentVolumeClaim
-apiVersion: v1
 metadata:
-  name: postgres-elections-pv-claim
-  labels:
-    app: postgres-elections
+  name: elections-claim
 spec:
-  storageClassName: manual
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
   resources:
     requests:
-      storage: 5Gi
+      storage: 30Gi
 ---
-apiVersion: "apps/v1"
-kind: "Deployment"
+apiVersion: extensions/v1beta1
+kind: Deployment
 metadata:
-  name: "postgres-elections"
+  name: elections-db
+  labels:
+    app: elections-db
 spec:
   replicas: 1
-  selector:
-    matchLabels:
-      app: "postgres-elections"
   template:
     metadata:
       labels:
-        app: "postgres-elections"
+        app: elections-db
     spec:
       containers:
-      - name: "postgres-elections"
-        image: "postgres:latest"
-        volumeMounts:
+        - name: elections-db
+          image: postgres:11
+          env:
+          - name: "POSTGRES_DB"
+            valueFrom:
+              secretKeyRef:
+                name: "creds-elections"
+                key: "PGDATABASE"
+          - name: "POSTGRES_USER"
+            valueFrom:
+              secretKeyRef:
+                name: "creds-elections"
+                key: "PGUSER"
+          - name: "POSTGRES_PASSWORD"
+            valueFrom:
+              secretKeyRef:
+                name: "creds-elections"
+                key: "PGPASSWORD"
+          - name: PGDATA
+            value: /var/lib/postgresql/data/pgdata
+          ports:
+          - containerPort: 5432
+            name: elections-db
+          volumeMounts:
             - mountPath: /var/lib/postgresql/data
-              name: postgres-elections
-        env:
-        - name: "POSTGRES_DB"
-          valueFrom:
-            secretKeyRef:
-              name: "creds-elections"
-              key: "PGDATABASE"
-        - name: "POSTGRES_USER"
-          valueFrom:
-            secretKeyRef:
-              name: "creds-elections"
-              key: "PGUSER"
-        - name: "POSTGRES_PASSWORD"
-          valueFrom:
-            secretKeyRef:
-              name: "creds-elections"
-              key: "PGPASSWORD"
-        ports:
-        - containerPort: 5432
-          name: postgres-elections
+              name: postgredb
       volumes:
-        - name: postgres-elections
+        - name: postgredb
           persistentVolumeClaim:
-            claimName: postgres-elections-pv-claim
+            claimName: elections-claim
 ---
 apiVersion: "apps/v1"
 kind: "Deployment"
@@ -113,7 +95,7 @@ spec:
               name: "creds"
               key: "BOT_TOKEN"
         - name: "PGHOST"
-          value: "postgres-elections"
+          value: "elections-db"
         - name: "PGPORT"
           valueFrom:
             secretKeyRef:
