@@ -16,6 +16,8 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: elections-db
+  labels:
+    app: elections-db
 spec:
   replicas: 1
   template:
@@ -42,6 +44,8 @@ spec:
               secretKeyRef:
                 name: "creds-elections"
                 key: "PGPASSWORD"
+          - name: PGDATA
+            value: /var/lib/postgresql/data/pgdata
           ports:
           - containerPort: 5432
             name: elections-db
